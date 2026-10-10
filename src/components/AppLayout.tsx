@@ -2,6 +2,7 @@ import {
   ActionIcon,
   AppShell,
   Badge,
+  Box,
   Group,
   NavLink,
   Text,
@@ -25,6 +26,9 @@ const NAV = [
 
 /** Height of the mobile bottom navigation bar (excluding the safe-area inset). */
 export const BOTTOM_NAV_HEIGHT = 60;
+/** Total space reserved for the bottom navigation on phones. */
+export const BOTTOM_NAV_SPACE = `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px))`;
+export const HEADER_HEIGHT = 56;
 
 export function AppLayout() {
   const { t } = useTranslation();
@@ -36,11 +40,7 @@ export function AppLayout() {
   const desktopNav = useMediaQuery('(min-width: 48em)', true);
 
   return (
-    <AppShell
-      header={{ height: 56 }}
-      footer={{ height: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px))`, collapsed: desktopNav }}
-      padding={0}
-    >
+    <AppShell header={{ height: HEADER_HEIGHT }} padding={0}>
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between" wrap="nowrap">
           <UnstyledButton component={Link} to="/" style={{ minWidth: 0 }}>
@@ -89,12 +89,25 @@ export function AppLayout() {
         </Group>
       </AppShell.Header>
 
-      <AppShell.Main>
+      <AppShell.Main style={desktopNav ? undefined : { paddingBottom: BOTTOM_NAV_SPACE }}>
         <Outlet />
       </AppShell.Main>
 
       {!desktopNav && (
-        <AppShell.Footer style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        // Own fixed bar (not AppShell.Footer) so its size is exact on every browser.
+        <Box
+          component="nav"
+          style={{
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 200,
+            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+            background: 'var(--mantine-color-body)',
+            borderTop: '1px solid var(--mantine-color-default-border)',
+          }}
+        >
           <Group h={BOTTOM_NAV_HEIGHT} gap={0} grow wrap="nowrap">
             {NAV.map((n) => {
               const active = pathname === n.to;
@@ -122,7 +135,7 @@ export function AppLayout() {
               );
             })}
           </Group>
-        </AppShell.Footer>
+        </Box>
       )}
     </AppShell>
   );
