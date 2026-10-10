@@ -4,6 +4,7 @@ import { useHotkeys, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { CanvasView } from '@/components/editor/CanvasView';
 import { EditorToolbar } from '@/components/editor/EditorToolbar';
+import { MobileEditor } from '@/components/editor/MobileEditor';
 import { ParameterPanels } from '@/components/editor/ParameterPanels';
 import { InspectorPanel } from '@/components/editor/panels/InspectorPanel';
 import { RoadmapCard } from '@/components/editor/RoadmapCard';
@@ -111,19 +112,5 @@ export function EditorPage() {
     );
   }
 
-  return (
-    <Stack gap="sm" p="sm">
-      <EditorToolbar />
-      <Paper withBorder bg="var(--mantine-color-default-hover)" p="xs" h="min(60dvh, 560px)">
-        <CanvasView />
-      </Paper>
-      <Text size="xs" c="dimmed" ta="center">
-        {t('editor.canvasHint')}
-      </Text>
-      {selectedId && inspector}
-      {analysis}
-      <ParameterPanels />
-      <RoadmapCard />
-    </Stack>
-  );
+  return <MobileEditor />;
 }
