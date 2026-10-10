@@ -61,7 +61,9 @@
     "angle": "Tilt (camera roll)",
     "cameraHeight": "Camera height",
     "ratio": "Sky {{sky}}% / Ground {{ground}}%",
-    "hint": "On flat ground the horizon crosses every person at the camera height (eye-level rule). Use “Snap to eye level” on a figure to get a consistent size."
+    "hint": "On flat ground the horizon crosses every person at the camera height (eye-level rule). Use “Snap to eye level” on a figure to get a consistent size.",
+    "fov": "Field of view (lens)",
+    "fovHint": "Wider lenses (larger values) exaggerate the foreshortening of figures tilted toward the camera."
   },
   "perspective": {
     "none": "None",
@@ -100,7 +102,10 @@
   "poses": {
     "standing": "Standing",
     "walking": "Walking",
-    "sitting": "Sitting"
+    "sitting": "Sitting",
+    "running": "Running",
+    "jumping": "Jumping",
+    "reaching": "Reaching"
   },
   "inspector": {
     "none": "Tap an object on the canvas to edit it here.",
@@ -109,10 +114,15 @@
     "y": "Ground contact (vertical)",
     "height": "Height",
     "width": "Width",
-    "facing": "Facing (0° = front)",
+    "facing": "Direction (Y axis, 0° = front)",
     "snapEyeLevel": "Snap to eye level",
     "layer": "Layer",
-    "flip": "Flip horizontally"
+    "flip": "Flip horizontally",
+    "tilt": "Lean forward/back (X axis)",
+    "roll": "Lean sideways (Z axis)",
+    "resetRotation": "Reset rotation",
+    "pose": "Pose",
+    "rotation": "Rotation"
   },
   "guides": {
     "thirds": "Rule of thirds",
@@ -212,6 +222,16 @@
           "Horizon height corresponds to camera tilt; its angle is the camera roll (Dutch angle).",
           "Drag the white handle on the left for height and the blue handle on the right for tilt.",
           "With a camera height, the eye-level rule computes a natural figure size from where it stands."
+        ]
+      },
+      {
+        "title": "3D figure rotation & poses",
+        "items": [
+          "Figures are 3D mannequins. Select one and rotate it freely with Direction (Y), Lean forward/back (X) and Lean sideways (Z).",
+          "Drag the round handle above a selected object to rotate it on screen (Z), snapping every 15°. Scenery can be rotated too.",
+          "Poses: standing, walking, running, jumping, sitting, reaching.",
+          "Widen the Field of view (lens) in the Horizon panel to exaggerate the foreshortening of figures leaning toward the camera for dramatic shots.",
+          "Raise Discovery or use the “dynamic pose” / “dramatic wide-angle” mutations to try such compositions automatically."
         ]
       },
       {
@@ -429,7 +449,9 @@
     "modeMutateHint": "Keeps part of the current composition's character while applying bold changes (extreme horizon, tiny figures, flipped vanishing point…).",
     "runMutate": "Mutate",
     "restored": "Results restored from history.",
-    "failed": "Exploration failed"
+    "failed": "Exploration failed",
+    "relaxedTitle": "No candidate met the constraints",
+    "relaxedBody": "Showing the closest candidates instead. Relax the conditions (sky area, off-center, in frame) or unlock objects to find more."
   },
   "tags": {
     "highHorizon": "high horizon",
@@ -444,7 +466,9 @@
     "tinyFigure": "tiny figure",
     "closeUp": "close-up",
     "dynamic": "dynamic",
-    "group": "group"
+    "group": "group",
+    "dynamicPose": "dynamic pose",
+    "wideAngle": "wide-angle"
   },
   "mutations": {
     "horizonExtreme": "extreme horizon",
@@ -455,7 +479,9 @@
     "moreSpace": "more space",
     "dutchAngle": "strong tilt",
     "switchPerspective": "switch perspective",
-    "mirror": "mirror"
+    "mirror": "mirror",
+    "dynamicPose": "dynamic pose",
+    "dramaticLens": "dramatic wide-angle"
   },
   "library": {
     "favorite": "Favorite",
@@ -493,6 +519,9 @@
       "settings": "Settings",
       "conditions": "Conditions",
       "library": "Library"
-    }
+    },
+    "minimize": "Minimize",
+    "showCandidates": "Show candidates",
+    "candidatesShort": "{{n}} candidates"
   }
 }

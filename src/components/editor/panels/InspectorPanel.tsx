@@ -1,4 +1,4 @@
-import { Button, Group, SegmentedControl, Stack, Switch, Text } from '@mantine/core';
+import { Button, SimpleGrid, Group, Stack, Switch, Text } from '@mantine/core';
 import { IconCopy, IconRuler2, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { eyeLevelFigureHeight } from '@/core/geometry/camera';
@@ -118,14 +118,52 @@ export function InspectorPanel() {
           disabled={locked}
           onChange={(facing) => updateFigure(fig.id, { facing })}
         />
-        <SegmentedControl
-          fullWidth
-          size="xs"
-          value={fig.pose}
+        <ParamSlider
+          label={t('inspector.tilt')}
+          value={fig.tilt}
+          min={-180}
+          max={180}
+          step={5}
+          unit="°"
           disabled={locked}
-          onChange={(v) => updateFigure(fig.id, { pose: v as Pose })}
-          data={POSES.map((p) => ({ value: p, label: t(`poses.${p}`) }))}
+          onChange={(tilt) => updateFigure(fig.id, { tilt })}
         />
+        <ParamSlider
+          label={t('inspector.roll')}
+          value={fig.roll}
+          min={-180}
+          max={180}
+          step={5}
+          unit="°"
+          disabled={locked}
+          onChange={(roll) => updateFigure(fig.id, { roll })}
+        />
+        <Button
+          size="xs"
+          variant="default"
+          disabled={locked || (fig.facing === 0 && fig.tilt === 0 && fig.roll === 0)}
+          onClick={() => updateFigure(fig.id, { facing: 0, tilt: 0, roll: 0 })}
+        >
+          {t('inspector.resetRotation')}
+        </Button>
+        <div>
+          <Text size="sm" mb={4}>
+            {t('inspector.pose')}
+          </Text>
+          <SimpleGrid cols={3} spacing={4}>
+            {POSES.map((p) => (
+              <Button
+                key={p}
+                size="compact-sm"
+                variant={fig.pose === p ? 'filled' : 'default'}
+                disabled={locked}
+                onClick={() => updateFigure(fig.id, { pose: p as Pose })}
+              >
+                {t(`poses.${p}`)}
+              </Button>
+            ))}
+          </SimpleGrid>
+        </div>
         {actions}
       </Stack>
     );
@@ -170,6 +208,16 @@ export function InspectorPanel() {
         unit="%"
         disabled={locked}
         onChange={(height) => updateProp(p.id, { height })}
+      />
+      <ParamSlider
+        label={t('inspector.rotation')}
+        value={p.rotation}
+        min={-180}
+        max={180}
+        step={1}
+        unit="°"
+        disabled={locked}
+        onChange={(rotation) => updateProp(p.id, { rotation })}
       />
       <Switch
         label={t('inspector.flip')}

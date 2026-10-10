@@ -28,10 +28,13 @@ export interface Candidate {
   tags: string[];
   /** Mutations applied (mutate mode only). */
   mutations?: Mutation[];
+  /** Breaks a constraint; only shown when nothing satisfies them. */
+  relaxed?: boolean;
 }
 
 export interface ChunkResult {
   pool: Candidate[];
+  fallback: Candidate[];
   generated: number;
   rejected: number;
 }
@@ -89,17 +92,24 @@ export function tagsFor(c: Composition, f: Features, m: Metrics): string[] {
   if (maxFig > 0.6) t.push('closeUp');
   if (m.dynamics > 60) t.push('dynamic');
   if (c.figures.length >= 2) t.push('group');
+  if (c.figures.some((x) => Math.abs(x.tilt) >= 20 || Math.abs(x.roll) >= 15)) t.unshift('dynamicPose');
+  if (c.horizon.fov >= 80) t.unshift('wideAngle');
   return t.slice(0, 4);
 }
 
-function violates(spec: ExplorationSpec, f: Features): boolean {
+/** What the template itself already breaks is not held against candidates. */
+interface Baseline {
+  hiddenFigures: Set<string>;
+}
+
+function violates(spec: ExplorationSpec, f: Features, base: Baseline): boolean {
   const { skyMin, avoidCenter, keepInFrame } = spec.constraints;
   if (skyMin > 0 && f.horizonY < skyMin) return true;
   const p = f.primary?.focus;
   if (p && avoidCenter && Math.abs(p.x - 0.5) < 0.08) return true;
   if (p && keepInFrame && (p.x < 0.03 || p.x > 0.97 || p.y < 0.03 || p.y > 0.97)) return true;
-  // Every figure must be at least partly visible.
-  if (f.figures.some((x) => x.subject.area <= 0)) return true;
+  // Figures visible in the template must stay at least partly visible.
+  if (f.figures.some((x) => x.subject.area <= 0 && !base.hiddenFigures.has(x.subject.id))) return true;
   return false;
 }
 
@@ -117,7 +127,11 @@ export function runChunk({ template, spec, start, count, keep }: ChunkRequest): 
   const tf = extractFeatures(template);
   const tDesc = describe(template, tf, computeMetrics(template, tf));
   const d = spec.discovery;
+  const base: Baseline = {
+    hiddenFigures: new Set(tf.figures.filter((x) => x.subject.area <= 0).map((x) => x.subject.id)),
+  };
   const pool: Candidate[] = [];
+  const fallback: Candidate[] = [];
   let rejected = 0;
   for (let i = start; i < start + count; i++) {
     const rng = createRng(candidateSeed(spec.seed, i));
@@ -129,17 +143,18 @@ export function runChunk({ template, spec, start, count, keep }: ChunkRequest): 
       mutations = r.applied;
     } else c = generateCandidate(template, spec, rng);
     const f = extractFeatures(c);
-    if (violates(spec, f)) {
-      rejected++;
-      continue;
-    }
+    const bad = violates(spec, f, base);
+    if (bad) rejected++;
+    // Rejected candidates are still scored into a small fallback pool, used
+    // only when nothing satisfies the constraints (so a run never comes back empty).
     const m = computeMetrics(c, f);
     const score = weightedScore(m, weights);
     const descriptor = describe(c, f, m);
     const novelty = Math.min(1, distance(descriptor, tDesc) / 0.35);
     const experimental = weightedScore(m, PRESETS.experimental);
     const objective = (1 - d) * score + d * (0.5 * experimental + 0.5 * novelty * 100);
-    pool.push({
+    (bad ? fallback : pool).push({
+      relaxed: bad || undefined,
       index: i,
       composition: c,
       metrics: m,
@@ -151,8 +166,10 @@ export function runChunk({ template, spec, start, count, keep }: ChunkRequest): 
       mutations,
     });
   }
-  pool.sort((a, b) => b.objective - a.objective || a.index - b.index);
-  return { pool: pool.slice(0, keep), generated: count, rejected };
+  const byObjective = (a: Candidate, b: Candidate) => b.objective - a.objective || a.index - b.index;
+  pool.sort(byObjective);
+  fallback.sort(byObjective);
+  return { pool: pool.slice(0, keep), fallback: fallback.slice(0, keep), generated: count, rejected };
 }
 
 /**
@@ -209,7 +226,7 @@ export function exploreSync(
   const k = poolSize(spec);
   const r = runChunk({ template, spec, start: 0, count: spec.candidates, keep: k });
   return {
-    candidates: selectDiverse(r.pool, spec.present, spec.diversity),
+    candidates: selectDiverse(r.pool.length ? r.pool : r.fallback, spec.present, spec.diversity),
     generated: r.generated,
     rejected: r.rejected,
   };

@@ -28,7 +28,9 @@ export function primitiveToSvg(p: Primitive): string {
       return `<${tag} points="${pts.join(' ')}"${styleAttrs(p, p.closed)}/>`;
     }
     case 'ellipse':
-      return `<ellipse cx="${n(p.cx)}" cy="${n(p.cy)}" rx="${n(p.rx)}" ry="${n(p.ry)}"${styleAttrs(p, true)}/>`;
+      return `<ellipse cx="${n(p.cx)}" cy="${n(p.cy)}" rx="${n(p.rx)}" ry="${n(p.ry)}"${
+        p.rotate ? ` transform="rotate(${n(p.rotate)} ${n(p.cx)} ${n(p.cy)})"` : ''
+      }${styleAttrs(p, true)}/>`;
     case 'line':
       return `<line x1="${n(p.x1)}" y1="${n(p.y1)}" x2="${n(p.x2)}" y2="${n(p.y2)}"${styleAttrs(p, false)}/>`;
     case 'path':

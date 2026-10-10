@@ -5,7 +5,8 @@ import type { Figure, Prop } from '../model/composition';
 import type { Frame } from '../geometry/camera';
 import { lerp, type Vec2 } from '../geometry/vec';
 import type { Palette } from './palette';
-import { boundsOfPoints, type Primitive, type SceneItem } from './primitives';
+import { boundsOfPoints, primitivePoints, rotatePrims, type Primitive, type SceneItem } from './primitives';
+import { BONES, HEAD_RADIUS, projectFigure } from './figure3d';
 
 const flat = (pts: Vec2[]): number[] => pts.flatMap((p) => [p.x, p.y]);
 
@@ -16,119 +17,68 @@ function lineIntersection(a1: Vec2, a2: Vec2, b1: Vec2, b2: Vec2): Vec2 | null {
   return { x: a1.x + t * (a2.x - a1.x), y: a1.y + t * (a2.y - a1.y) };
 }
 
-/** Human silhouette. Proportions follow a ~7.5-head canon. */
-export function figureItem(fig: Figure, f: Frame, pal: Palette): SceneItem {
-  const h = fig.height * f.H;
-  const x = fig.x * f.W;
-  const y = fig.y * f.H;
-  const rad = (fig.facing * Math.PI) / 180;
-  // Side views are narrower; sign tells which way the figure looks.
-  const side = Math.sin(rad);
-  const widthK = 0.55 + 0.45 * Math.abs(Math.cos(rad));
-  const headR = h / 15;
-  const style = {
-    fill: pal.figure,
-    stroke: pal.figureStroke,
-    strokeWidth: Math.max(1, h * 0.006),
-  };
-  const prims: Primitive[] = [];
+/**
+ * Figure as a projected 3D mannequin: capsules for bones and a sphere for the
+ * head, painted far-to-near so limbs reaching toward the camera overlap the body.
+ */
+export function figureItem(fig: Figure, f: Frame, pal: Palette, fov = 50): SceneItem {
+  const pf = projectFigure(fig, f, fov);
+  const outline = Math.max(1, fig.height * f.H * 0.006);
+  type Part = { depth: number; prims: Primitive[] };
+  const parts: Part[] = [];
+  const pts: number[] = [];
 
-  const sitting = fig.pose === 'sitting';
-  const walking = fig.pose === 'walking';
-  // Vertical landmarks (measured upward from the feet).
-  const hipY = y - h * (sitting ? 0.28 : 0.5);
-  const shoulderY = y - h * (sitting ? 0.6 : 0.82);
-  const neckY = shoulderY - h * 0.02;
-  const headCY = neckY - headR * 1.05;
-  const shoulderW = h * 0.13 * widthK;
-  const hipW = h * 0.1 * widthK;
-  const lean = walking ? side * h * 0.03 : 0;
-
-  // Torso.
-  prims.push({
-    t: 'poly',
-    closed: true,
-    points: flat([
-      { x: x - shoulderW + lean, y: shoulderY },
-      { x: x + shoulderW + lean, y: shoulderY },
-      { x: x + hipW, y: hipY },
-      { x: x - hipW, y: hipY },
-    ]),
-    ...style,
-  });
-  // Head + a small nose bump showing the facing direction.
-  prims.push({
-    t: 'ellipse',
-    cx: x + lean,
-    cy: headCY,
-    rx: headR * (0.85 + 0.15 * widthK),
-    ry: headR,
-    ...style,
-  });
-  if (Math.abs(side) > 0.3) {
-    const nx = x + lean + Math.sign(side) * headR * 0.95;
-    prims.push({
-      t: 'poly',
-      closed: true,
-      points: [
-        nx,
-        headCY - headR * 0.15,
-        nx + Math.sign(side) * headR * 0.3,
-        headCY + headR * 0.1,
-        nx,
-        headCY + headR * 0.25,
+  for (const [a, b, r] of BONES) {
+    const A = pf.joints[a];
+    const B = pf.joints[b];
+    const w = 2 * r * ((pf.scaleAt(a) + pf.scaleAt(b)) / 2);
+    parts.push({
+      depth: (A.depth + B.depth) / 2,
+      prims: [
+        { t: 'line', x1: A.x, y1: A.y, x2: B.x, y2: B.y, stroke: pal.figureStroke, strokeWidth: w + outline * 2 },
+        { t: 'line', x1: A.x, y1: A.y, x2: B.x, y2: B.y, stroke: pal.figure, strokeWidth: w },
       ],
-      ...style,
+    });
+    pts.push(A.x - w / 2, A.y - w / 2, A.x + w / 2, A.y + w / 2, B.x - w / 2, B.y - w / 2, B.x + w / 2, B.y + w / 2);
+  }
+  const H = pf.joints.head;
+  const hr = HEAD_RADIUS * pf.scaleAt('head');
+  const headPrims: Primitive[] = [
+    {
+      t: 'ellipse',
+      cx: H.x,
+      cy: H.y,
+      rx: hr,
+      ry: hr,
+      fill: pal.figure,
+      stroke: pal.figureStroke,
+      strokeWidth: outline,
+    },
+  ];
+  // Nose marks the facing direction when it is on the visible side of the head.
+  if (pf.nose.depth < H.depth - 1e-6) {
+    const nr = hr * 0.28;
+    headPrims.push({
+      t: 'ellipse',
+      cx: pf.nose.x,
+      cy: pf.nose.y,
+      rx: nr,
+      ry: nr,
+      fill: pal.figure,
+      stroke: pal.figureStroke,
+      strokeWidth: outline,
     });
   }
-  // Legs.
-  const legW = h * 0.035;
-  const spread = walking ? h * 0.12 : h * 0.03 * widthK;
-  if (sitting) {
-    const dir = side === 0 ? 1 : Math.sign(side);
-    const knee = { x: x + dir * h * 0.2, y: hipY };
-    for (const dx of [-legW, legW]) {
-      prims.push({
-        t: 'poly',
-        closed: false,
-        points: flat([{ x: x + dx * 0.5, y: hipY }, knee, { x: knee.x + dx * 0.3, y }]),
-        stroke: pal.figure,
-        strokeWidth: legW * 2,
-      });
-    }
-  } else {
-    for (const s of [-1, 1]) {
-      prims.push({
-        t: 'line',
-        x1: x + s * hipW * 0.5,
-        y1: hipY,
-        x2: x + s * spread,
-        y2: y - legW,
-        stroke: pal.figure,
-        strokeWidth: legW * 2,
-      });
-    }
-  }
-  // Arms.
-  const armSwing = walking ? h * 0.08 : h * 0.02;
-  for (const s of [-1, 1]) {
-    prims.push({
-      t: 'line',
-      x1: x + s * shoulderW * 0.9 + lean,
-      y1: shoulderY + legW,
-      x2: x + s * (shoulderW + armSwing * 0.5) + lean - s * (walking ? s * side * armSwing : 0),
-      y2: shoulderY + h * (sitting ? 0.25 : 0.36),
-      stroke: pal.figure,
-      strokeWidth: legW * 1.6,
-    });
-  }
+  parts.push({ depth: H.depth, prims: headPrims });
+  pts.push(H.x - hr, H.y - hr, H.x + hr, H.y + hr);
 
+  parts.sort((a, b) => b.depth - a.depth);
   return {
     id: fig.id,
     kind: 'figure',
-    prims,
-    bounds: { x: x - h * 0.2, y: y - h, w: h * 0.4, h },
-    anchor: { x, y },
+    prims: parts.flatMap((p) => p.prims),
+    bounds: boundsOfPoints(pts),
+    anchor: { x: fig.x * f.W, y: fig.y * f.H },
   };
 }
 
@@ -372,13 +322,13 @@ function boxPrims(
 }
 
 export function propItem(p: Prop, f: Frame, pal: Palette, vps: Vec2[]): SceneItem {
-  const prims = propPrims(p, f, pal, vps);
-  const pts: number[] = [];
-  for (const pr of prims) {
-    if (pr.t === 'poly') pts.push(...pr.points);
-    else if (pr.t === 'ellipse') pts.push(pr.cx - pr.rx, pr.cy - pr.ry, pr.cx + pr.rx, pr.cy + pr.ry);
-    else if (pr.t === 'line') pts.push(pr.x1, pr.y1, pr.x2, pr.y2);
+  let prims = propPrims(p, f, pal, vps);
+  if (p.rotation) {
+    // Rotate around the center of the unrotated shape.
+    const b = boundsOfPoints(prims.flatMap(primitivePoints));
+    prims = rotatePrims(prims, b.x + b.w / 2, b.y + b.h / 2, p.rotation);
   }
+  const pts = prims.flatMap(primitivePoints);
   return {
     id: p.id,
     kind: 'prop',

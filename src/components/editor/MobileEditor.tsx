@@ -137,6 +137,7 @@ export function MobileEditor() {
   const [active, setActive] = useState<SheetKey | null>(null);
   const [shown, setShown] = useState<SheetKey | null>(null); // keeps content during the close animation
   const [stripHidden, setStripHidden] = useState(false);
+  const [stripCollapsed, setStripCollapsed] = useState(false);
   const prevSelected = useRef<string | null>(null);
 
   // Selecting an object opens its controls; deselecting closes them.
@@ -149,7 +150,10 @@ export function MobileEditor() {
     if (active) setShown(active);
   }, [active]);
   // New results → show the strip again.
-  useEffect(() => setStripHidden(false), [result]);
+  useEffect(() => {
+    setStripHidden(false);
+    setStripCollapsed(false);
+  }, [result]);
 
   const tools = selectedId ? [SELECTED_TOOL, ...TOOLS] : TOOLS;
   const current = SHEETS.find((x) => x.key === shown);
@@ -178,7 +182,8 @@ export function MobileEditor() {
       </Box>
 
       <Box style={{ flex: 1, minHeight: 0, position: 'relative' }}>
-        <Box p={6} h="100%">
+        {/* Touching the canvas tucks the candidate strip away so it never hides the drawing. */}
+        <Box p={6} h="100%" onPointerDownCapture={() => setStripCollapsed(true)}>
           <Paper withBorder bg="var(--mantine-color-default-hover)" p={6} h="100%">
             <CanvasView />
           </Paper>
@@ -189,10 +194,25 @@ export function MobileEditor() {
         </Box>
         {!sheetOpen && (
           <Stack gap={8} style={{ position: 'absolute', left: 12, right: 12, bottom: 12, zIndex: 3 }} align="stretch">
-            <Group justify="flex-end">
+            <Group justify="space-between" align="flex-end" wrap="nowrap">
+              <Box>
+                {!stripHidden && stripCollapsed && (
+                  <CandidateStrip
+                    collapsed
+                    onToggle={() => setStripCollapsed(false)}
+                    onClose={() => setStripHidden(true)}
+                  />
+                )}
+              </Box>
               <ExploreFab onOpenSettings={() => toggle('explore')} />
             </Group>
-            {!stripHidden && <CandidateStrip onClose={() => setStripHidden(true)} />}
+            {!stripHidden && !stripCollapsed && (
+              <CandidateStrip
+                collapsed={false}
+                onToggle={() => setStripCollapsed(true)}
+                onClose={() => setStripHidden(true)}
+              />
+            )}
           </Stack>
         )}
 

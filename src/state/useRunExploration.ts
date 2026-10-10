@@ -13,7 +13,9 @@ export function useRunExploration() {
     const { setSpec, run } = useExplorationStore.getState();
     setSpec((s) => void (s.preset = useViewStore.getState().preset));
     await run(useCompositionStore.getState().composition, useSettingsStore.getState().workerCount);
-    const { error } = useExplorationStore.getState();
+    const { error, result } = useExplorationStore.getState();
     if (error) notifications.show({ color: 'red', title: t('explore.failed'), message: error });
+    else if (result && result.candidates.length > 0 && result.candidates.every((c) => c.relaxed))
+      notifications.show({ color: 'yellow', title: t('explore.relaxedTitle'), message: t('explore.relaxedBody') });
   }, [t]);
 }

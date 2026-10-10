@@ -73,6 +73,8 @@ export function generateCandidate(template: Composition, spec: ExplorationSpec, 
       y: 0.9,
       height: 0.25,
       facing: 0,
+      tilt: 0,
+      roll: 0,
       pose: 'standing',
       locked: false,
     };
@@ -85,6 +87,12 @@ export function generateCandidate(template: Composition, spec: ExplorationSpec, 
     if (spec.eyeLevelSizing && ideal != null) f.height = clamp(ideal * rng.range(0.88, 1.12), 0.01, 3);
     else f.height = sampleParam(spec, 'figureSize', base.height, rng);
     if (spec.params.figureX.mode !== 'fixed' && rng.chance(0.5)) f.facing = rng.pick([-90, -45, 0, 0, 45, 90]);
+    // Discovery also tries dynamic poses and 3D rotations for impact.
+    if (rng.chance(0.3 * spec.discovery)) f.pose = rng.pick(['walking', 'running', 'jumping', 'reaching'] as const);
+    if (rng.chance(0.35 * spec.discovery)) {
+      f.tilt = Math.round(rng.range(-55, 55));
+      f.roll = Math.round(rng.range(-35, 35));
+    }
     figures.push(f);
   }
   c.figures = figures;

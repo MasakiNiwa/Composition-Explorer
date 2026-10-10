@@ -41,6 +41,18 @@ export function HorizonPanel() {
         precision={1}
         onChange={(v) => update((d) => void (d.horizon.cameraHeight = v))}
       />
+      <ParamSlider
+        label={t('horizon.fov')}
+        value={h.fov}
+        min={15}
+        max={130}
+        step={1}
+        unit="°"
+        onChange={(v) => update((d) => void (d.horizon.fov = v))}
+      />
+      <Text size="xs" c="dimmed">
+        {t('horizon.fovHint')}
+      </Text>
       <Text size="xs" c="dimmed">
         {t('horizon.ratio', {
           sky: sky.toFixed(0),

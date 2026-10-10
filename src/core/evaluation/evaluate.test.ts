@@ -7,7 +7,7 @@ import { PRESETS, weightedScore } from './presets';
 function withFigure(x: number, y: number, horizon = 0.6): Composition {
   const c = createEmptyComposition();
   c.horizon.y = horizon;
-  c.figures.push({ id: 'f', x, y, height: 0.25, facing: 0, pose: 'standing', locked: false });
+  c.figures.push({ id: 'f', x, y, height: 0.25, facing: 0, tilt: 0, roll: 0, pose: 'standing', locked: false });
   return c;
 }
 
@@ -72,6 +72,7 @@ describe('evaluate', () => {
       width: 0.6,
       height: 0.6,
       flip: false,
+      rotation: 0,
       locked: false,
     });
     expect(evaluate(c).metrics.negativeSpace).toBeLessThan(empty);
