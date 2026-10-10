@@ -1,4 +1,5 @@
-import { Box, Card, Paper, ScrollArea, Stack, Text, Title } from '@mantine/core';
+import { Box, Card, Paper, ScrollArea, Stack, Tabs, Text, Title } from '@mantine/core';
+import { IconChartRadar, IconSparkles } from '@tabler/icons-react';
 import { useHotkeys, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { CanvasView } from '@/components/editor/CanvasView';
@@ -7,6 +8,7 @@ import { ParameterPanels } from '@/components/editor/ParameterPanels';
 import { InspectorPanel } from '@/components/editor/panels/InspectorPanel';
 import { RoadmapCard } from '@/components/editor/RoadmapCard';
 import { EvaluationPanel } from '@/components/evaluation/EvaluationPanel';
+import { ExplorePanel } from '@/components/exploration/ExplorePanel';
 import { useCompositionStore } from '@/state/compositionStore';
 import { useViewStore } from '@/state/viewStore';
 
@@ -40,12 +42,24 @@ export function EditorPage() {
     </Card>
   );
 
-  const evaluation = (
+  const analysis = (
     <Card withBorder padding="sm">
-      <Title order={6} mb="xs">
-        {t('sections.evaluation')}
-      </Title>
-      <EvaluationPanel />
+      <Tabs defaultValue="explore" keepMounted={false}>
+        <Tabs.List grow mb="sm">
+          <Tabs.Tab value="explore" leftSection={<IconSparkles size={16} />}>
+            {t('sections.explore')}
+          </Tabs.Tab>
+          <Tabs.Tab value="evaluation" leftSection={<IconChartRadar size={16} />}>
+            {t('sections.evaluation')}
+          </Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panel value="explore">
+          <ExplorePanel />
+        </Tabs.Panel>
+        <Tabs.Panel value="evaluation">
+          <EvaluationPanel />
+        </Tabs.Panel>
+      </Tabs>
     </Card>
   );
 
@@ -54,7 +68,7 @@ export function EditorPage() {
       <Box
         style={{
           display: 'grid',
-          gridTemplateColumns: '320px 1fr 300px',
+          gridTemplateColumns: '320px 1fr 340px',
           height: 'calc(100dvh - 56px)',
         }}
       >
@@ -82,8 +96,8 @@ export function EditorPage() {
           }}
         >
           <Stack p="sm" gap="sm">
-            {inspector}
-            {evaluation}
+            {selectedId && inspector}
+            {analysis}
             <RoadmapCard />
           </Stack>
         </ScrollArea>
@@ -101,8 +115,8 @@ export function EditorPage() {
         {t('editor.canvasHint')}
       </Text>
       {selectedId && inspector}
+      {analysis}
       <ParameterPanels />
-      {evaluation}
       <RoadmapCard />
     </Stack>
   );

@@ -7,7 +7,7 @@ export function RoadmapCard() {
   const phases = [
     { key: 'phase1', done: true },
     { key: 'phase2', done: true },
-    { key: 'phase3', done: false },
+    { key: 'phase3', done: true },
     { key: 'phase4', done: false },
     { key: 'phase5', done: false },
   ];
