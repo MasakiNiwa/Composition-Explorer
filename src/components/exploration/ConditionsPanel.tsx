@@ -1,15 +1,4 @@
-import {
-  Button,
-  Divider,
-  Group,
-  RangeSlider,
-  SegmentedControl,
-  Select,
-  Slider,
-  Stack,
-  Switch,
-  Text,
-} from '@mantine/core';
+import { Button, Divider, Group, RangeSlider, SegmentedControl, Slider, Stack, Switch, Text } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import {
   FREE_BOUNDS,
@@ -19,6 +8,7 @@ import {
   type PropsMode,
 } from '@/core/exploration/spec';
 import { useExplorationStore } from '@/state/explorationStore';
+import { AdaptiveSelect } from '@/components/common/AdaptiveSelect';
 
 const fmt = (key: NumericParam, v: number) => {
   const b = FREE_BOUNDS[key];
@@ -137,7 +127,7 @@ export function ConditionsPanel() {
           setSpec((s) => void (s.eyeLevelSizing = v));
         }}
       />
-      <Select
+      <AdaptiveSelect
         label={t('explore.props')}
         value={spec.props}
         allowDeselect={false}

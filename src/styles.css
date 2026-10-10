@@ -37,3 +37,21 @@ body {
   max-height: 240px;
   overflow: auto;
 }
+
+/* Translucent bottom sheet: keep text legible over the canvas with a halo in
+   the page color, and make inputs/cards slightly see-through too. */
+.ce-sheet-translucent {
+  --ce-halo: var(--mantine-color-body);
+}
+.ce-sheet-translucent :is(p, span, label, div, h1, h2, h3, h4, h5, h6) {
+  text-shadow:
+    0 0 2px var(--ce-halo),
+    0 0 4px var(--ce-halo),
+    0 0 8px var(--ce-halo);
+}
+.ce-sheet-translucent :is(input, select, textarea, .mantine-SegmentedControl-root, .mantine-Card-root, .mantine-Paper-root) {
+  background-color: color-mix(in srgb, var(--mantine-color-body) 78%, transparent);
+}
+.ce-sheet-translucent .mantine-Slider-track::before {
+  background-color: color-mix(in srgb, var(--mantine-color-gray-5) 70%, transparent);
+}

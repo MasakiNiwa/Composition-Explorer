@@ -103,6 +103,7 @@ export function BottomSheet({
   return (
     <Box
       ref={ref}
+      className={translucent ? 'ce-sheet-translucent' : undefined}
       onTransitionEnd={(e) => e.target === e.currentTarget && !open && setMounted(false)}
       style={{
         position: 'absolute',
@@ -117,7 +118,7 @@ export function BottomSheet({
         borderTopRightRadius: 16,
         boxShadow: '0 -4px 18px rgba(0,0,0,0.18)',
         background: translucent
-          ? 'color-mix(in srgb, var(--mantine-color-body) 72%, transparent)'
+          ? 'color-mix(in srgb, var(--mantine-color-body) 42%, transparent)'
           : 'var(--mantine-color-body)',
         transition: dragging ? 'none' : 'height 240ms cubic-bezier(0.2, 0.8, 0.2, 1)',
         overflow: 'hidden',

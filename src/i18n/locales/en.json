@@ -196,10 +196,13 @@
       {
         "title": "Using a phone",
         "items": [
-          "Pick a tool group in the bottom tool bar (Explore, Horizon, Perspective, Objects, Canvas, Guides, Evaluate, Conditions, Library) to open its controls in a bottom sheet over the canvas. The canvas keeps its size.",
+          "Shortcuts under the header: undo, redo, add figure/scenery, delete, clear, import, export.",
+          "Pick an editing group in the bottom tool bar (Horizon, Perspective, Objects, Canvas, Guides) to open its controls in a bottom sheet over the canvas. The canvas keeps its size.",
+          "The Explore button at the bottom-right of the canvas starts exploring right away; candidates appear in a strip at the bottom of the canvas. Tap one to load it, ☆ to save it. Tap the button again while running to cancel.",
+          "The adjust button next to Explore opens exploration settings (explore/mutate, Masterpiece ⇔ Discovery, …), conditions and the library.",
+          "Tap the score at the top-left of the canvas to open the evaluation (metrics and presets).",
           "Swipe the sheet's handle up/down to switch between half and full height, or swipe down to close. The eye icon makes the sheet translucent so you can watch the canvas while editing.",
           "Tap an object on the canvas to open the “Selected” panel and edit its position, size and direction.",
-          "The shortcuts just above the tool bar: undo, redo, add figure/scenery, delete, clear, import, export.",
           "The bottom navigation switches between Editor, Settings, Help and About."
         ]
       },
@@ -425,7 +428,8 @@
     "modeExploreHint": "Generates candidates broadly from the parameter space following the conditions.",
     "modeMutateHint": "Keeps part of the current composition's character while applying bold changes (extreme horizon, tiny figures, flipped vanishing point…).",
     "runMutate": "Mutate",
-    "restored": "Results restored from history."
+    "restored": "Results restored from history.",
+    "failed": "Exploration failed"
   },
   "tags": {
     "highHorizon": "high horizon",
@@ -481,6 +485,14 @@
       "conditions": "Conditions",
       "library": "Library"
     },
-    "translucent": "Translucent"
+    "translucent": "Translucent",
+    "openEvaluation": "Open evaluation",
+    "exploreSettings": "Exploration settings",
+    "candidates": "{{n}} candidates (tap to load)",
+    "exploreTabs": {
+      "settings": "Settings",
+      "conditions": "Conditions",
+      "library": "Library"
+    }
   }
 }
