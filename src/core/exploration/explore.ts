@@ -12,6 +12,7 @@ import { PRESETS, weightedScore } from '../evaluation/presets';
 import type { Composition } from '../model/composition';
 import { createRng } from '../random/prng';
 import { generateCandidate } from './generate';
+import { mutate, type Mutation } from './mutate';
 import type { ExplorationSpec } from './spec';
 
 export interface Candidate {
@@ -25,6 +26,8 @@ export interface Candidate {
   novelty: number;
   descriptor: number[];
   tags: string[];
+  /** Mutations applied (mutate mode only). */
+  mutations?: Mutation[];
 }
 
 export interface ChunkResult {
@@ -118,7 +121,13 @@ export function runChunk({ template, spec, start, count, keep }: ChunkRequest): 
   let rejected = 0;
   for (let i = start; i < start + count; i++) {
     const rng = createRng(candidateSeed(spec.seed, i));
-    const c = generateCandidate(template, spec, rng);
+    let c: Composition;
+    let mutations: Mutation[] | undefined;
+    if (spec.mode === 'mutate') {
+      const r = mutate(template, rng, spec.discovery);
+      c = r.composition;
+      mutations = r.applied;
+    } else c = generateCandidate(template, spec, rng);
     const f = extractFeatures(c);
     if (violates(spec, f)) {
       rejected++;
@@ -130,7 +139,17 @@ export function runChunk({ template, spec, start, count, keep }: ChunkRequest): 
     const novelty = Math.min(1, distance(descriptor, tDesc) / 0.35);
     const experimental = weightedScore(m, PRESETS.experimental);
     const objective = (1 - d) * score + d * (0.5 * experimental + 0.5 * novelty * 100);
-    pool.push({ index: i, composition: c, metrics: m, score, objective, novelty, descriptor, tags: tagsFor(c, f, m) });
+    pool.push({
+      index: i,
+      composition: c,
+      metrics: m,
+      score,
+      objective,
+      novelty,
+      descriptor,
+      tags: tagsFor(c, f, m),
+      mutations,
+    });
   }
   pool.sort((a, b) => b.objective - a.objective || a.index - b.index);
   return { pool: pool.slice(0, keep), generated: count, rejected };

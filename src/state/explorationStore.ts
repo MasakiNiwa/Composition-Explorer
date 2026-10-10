@@ -5,6 +5,7 @@ import { getLocalBackend } from '@/compute/localBackend';
 import { defaultSpec, type ExplorationSpec } from '@/core/exploration/spec';
 import type { Composition } from '@/core/model/composition';
 import { randomSeed } from '@/core/random/prng';
+import { useLibraryStore, type HistoryEntry } from './libraryStore';
 
 interface ExplorationState {
   spec: ExplorationSpec;
@@ -19,6 +20,8 @@ interface ExplorationState {
   run: (template: Composition, workerCount: number) => Promise<void>;
   cancel: () => void;
   setActive: (i: number | null) => void;
+  /** Show a past run's results again. */
+  restore: (entry: HistoryEntry) => void;
 }
 
 let controller: AbortController | null = null;
@@ -51,6 +54,14 @@ export const useExplorationStore = create<ExplorationState>()(
             controller.signal,
           );
           set({ result, activeIndex: null });
+          useLibraryStore.getState().addHistory({
+            mode: spec.mode,
+            seed: spec.seed,
+            discovery: spec.discovery,
+            preset: spec.preset,
+            template,
+            candidates: result.candidates,
+          });
         } catch (e) {
           if (!(e instanceof DOMException && e.name === 'AbortError'))
             set({ error: e instanceof Error ? e.message : String(e) });
@@ -60,6 +71,18 @@ export const useExplorationStore = create<ExplorationState>()(
       },
       cancel: () => controller?.abort(),
       setActive: (activeIndex) => set({ activeIndex }),
+      restore: (entry) =>
+        set({
+          activeIndex: null,
+          result: {
+            candidates: entry.candidates,
+            generated: 0,
+            rejected: 0,
+            elapsedMs: 0,
+            backend: 'history',
+            workers: 0,
+          },
+        }),
     }),
     {
       name: 'ce.exploration',
