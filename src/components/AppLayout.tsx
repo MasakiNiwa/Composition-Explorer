@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   AppShell,
+  Badge,
   Burger,
   Group,
   NavLink,
@@ -23,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { REPO_URL } from '@/lib/links';
 import { useSettingsStore } from '@/state/settingsStore';
+import { useBackendStore } from '@/compute/colab';
 
 const NAV = [
   { to: '/', key: 'nav.editor', icon: IconLayoutDashboard },
@@ -37,6 +39,7 @@ export function AppLayout() {
   const { pathname } = useLocation();
   const computed = useComputedColorScheme('light');
   const setSettings = useSettingsStore((s) => s.set);
+  const colab = useBackendStore((s) => s.colab);
 
   return (
     <AppShell
@@ -79,6 +82,13 @@ export function AppLayout() {
             ))}
           </Group>
           <Group gap={4} wrap="nowrap">
+            {colab && (
+              <Tooltip label={t('settings.colabConnected', { gpu: colab.gpu ?? 'CPU' })}>
+                <Badge color="orange" variant="light" component={Link} to="/settings" style={{ cursor: 'pointer' }}>
+                  Colab
+                </Badge>
+              </Tooltip>
+            )}
             <Tooltip label={t('nav.toggleTheme')}>
               <ActionIcon
                 variant="subtle"

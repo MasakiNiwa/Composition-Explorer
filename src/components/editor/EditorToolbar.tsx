@@ -11,11 +11,15 @@ import {
   IconFileTypeSvg,
   IconPhoto,
   IconUpload,
+  IconStack2,
+  IconLayersSubtract,
+  IconMessageCode,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
 import { parseComposition } from '@/core/model/composition';
-import { exportJson, exportPng, exportSvg } from '@/render/export';
+import { exportAiMap, exportJson, exportPng, exportSvg } from '@/render/export';
+import { compositionPrompt } from '@/core/prompt/prompt';
 import { useCompositionStore } from '@/state/compositionStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { useViewStore } from '@/state/viewStore';
@@ -144,6 +148,36 @@ export function EditorToolbar() {
             </Menu.Item>
             <Menu.Item leftSection={<IconBraces size={16} />} onClick={() => run(() => exportJson(composition))}>
               JSON
+            </Menu.Item>
+            <Menu.Divider />
+            <Menu.Label>{t('toolbar.aiExports')}</Menu.Label>
+            <Menu.Item
+              leftSection={<IconStack2 size={16} />}
+              onClick={() => run(() => exportAiMap(composition, 'depth', exportSize))}
+            >
+              {t('toolbar.depthMap')}
+            </Menu.Item>
+            <Menu.Item
+              leftSection={<IconLayersSubtract size={16} />}
+              onClick={() => run(() => exportAiMap(composition, 'segmentation', exportSize))}
+            >
+              {t('toolbar.segmentation')}
+            </Menu.Item>
+            <Menu.Item
+              leftSection={<IconMessageCode size={16} />}
+              onClick={() =>
+                run(async () => {
+                  const text = compositionPrompt(composition);
+                  try {
+                    await navigator.clipboard.writeText(text);
+                    notifications.show({ title: t('toolbar.promptCopied'), message: text });
+                  } catch {
+                    notifications.show({ title: t('toolbar.prompt'), message: text, autoClose: false });
+                  }
+                })
+              }
+            >
+              {t('toolbar.copyPrompt')}
             </Menu.Item>
           </Menu.Dropdown>
         </Menu>

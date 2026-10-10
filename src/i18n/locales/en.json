@@ -38,7 +38,13 @@
     "import": "Import",
     "imported": "Composition imported",
     "importFailed": "Import failed",
-    "export": "Export"
+    "export": "Export",
+    "aiExports": "For AI image generation",
+    "depthMap": "Depth map PNG",
+    "segmentation": "Segmentation PNG",
+    "copyPrompt": "Copy composition prompt",
+    "promptCopied": "Composition prompt copied",
+    "prompt": "Composition prompt"
   },
   "canvas": {
     "name": "Name",
@@ -156,7 +162,14 @@
     "resetDone": "Settings reset to defaults",
     "resetAll": "Erase all data",
     "resetAllTitle": "Erase all data?",
-    "resetAllBody": "Deletes the composition, view options and settings stored in this browser and reloads. This cannot be undone."
+    "resetAllBody": "Deletes the composition, view options and settings stored in this browser and reloads. This cannot be undone.",
+    "backend": "Compute backend",
+    "backendBrowser": "Browser (Web Workers)",
+    "noGpu": "none",
+    "colabConnected": "Connected to Colab backend ({{gpu}})",
+    "colabHint": "Served from a Google Colab kernel. Features using Colab resources will be added over time.",
+    "browserHint": "All computation runs in this browser (parallel Web Workers). The Colab edition uses the same UI with Colab's resources.",
+    "openColab": "Open the Colab edition notebook"
   },
   "help": {
     "title": "Help",
@@ -236,13 +249,22 @@
         ]
       },
       {
+        "title": "AI exports & Colab edition (Phase 5)",
+        "items": [
+          "The Export menu writes a depth map (near = white) and a segmentation image (ADE20K-style colors) as PNG for ControlNet-style workflows.",
+          "“Copy composition prompt” gives an English prompt describing horizon, camera, perspective and placement (also included in JSON).",
+          "The monochrome palette in Settings suits line-art drafts.",
+          "Colab edition: run the notebook in colab/ on Google Colab to launch the same UI there. Settings shows the connection and GPU."
+        ]
+      },
+      {
         "title": "Saving and reproducibility",
         "body": "JSON files include a schema version and random seed so compositions can be reproduced exactly. Exploration will be reproducible from the same conditions and seed as well."
       },
       {
         "title": "Coming next",
         "items": [
-          "Phase 5: richer AI-oriented exports and a Google Colab edition"
+          "NSGA-II multi-objective search, emotion presets, GPU-backed evaluation and image generation on Colab, and more"
         ]
       }
     ]
