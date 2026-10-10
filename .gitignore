@@ -1,0 +1,7 @@
+node_modules
+dist
+*.local
+.DS_Store
+coverage
+# generated at build time by scripts/generate-licenses.mjs
+public/third-party-licenses.json

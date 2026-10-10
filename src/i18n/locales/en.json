@@ -1,0 +1,238 @@
+{
+  "nav": {
+    "editor": "Editor",
+    "settings": "Settings",
+    "help": "Help",
+    "about": "About",
+    "menu": "Menu",
+    "toggleTheme": "Toggle light / dark"
+  },
+  "common": {
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "cancel": "Cancel"
+  },
+  "editor": {
+    "canvasHint": "Drag objects to move them; drag the top-right square to resize. White dot: horizon height, blue dot: tilt, red dots: vanishing points."
+  },
+  "sections": {
+    "canvas": "Canvas",
+    "horizon": "Horizon",
+    "perspective": "Perspective",
+    "objects": "Figures & scenery",
+    "guides": "Composition guides",
+    "inspector": "Selected object"
+  },
+  "toolbar": {
+    "undo": "Undo",
+    "redo": "Redo",
+    "clear": "Clear",
+    "clearTitle": "Clear the composition?",
+    "clearBody": "Removes all figures and scenery and resets the horizon and perspective. You can restore it with Undo.",
+    "cleared": "Composition cleared",
+    "sample": "Load sample composition",
+    "import": "Import",
+    "imported": "Composition imported",
+    "importFailed": "Import failed",
+    "export": "Export"
+  },
+  "canvas": {
+    "name": "Name",
+    "namePlaceholder": "e.g. Hill at dusk",
+    "aspect": "Aspect ratio",
+    "swap": "Swap orientation",
+    "ratioW": "Width",
+    "ratioH": "Height",
+    "seed": "Random seed",
+    "seedHint": "Used to reproduce exploration results",
+    "newSeed": "New seed"
+  },
+  "horizon": {
+    "position": "Height (from top)",
+    "angle": "Tilt (camera roll)",
+    "cameraHeight": "Camera height",
+    "ratio": "Sky {{sky}}% / Ground {{ground}}%",
+    "hint": "On flat ground the horizon crosses every person at the camera height (eye-level rule). Use “Snap to eye level” on a figure to get a consistent size."
+  },
+  "perspective": {
+    "none": "None",
+    "one": "1-point",
+    "two": "2-point",
+    "vp": "Vanishing point",
+    "vpLeft": "Left VP",
+    "vpRight": "Right VP",
+    "gridLines": "Grid density",
+    "strengthHint": "VP spacing {{span}}% (narrower = stronger perspective)",
+    "hint": "Vanishing points always sit on the horizon. Buildings are drawn converging to them."
+  },
+  "objects": {
+    "figure": "Figure",
+    "figureBadge": "person",
+    "addFigure": "Add figure",
+    "addProp": "Add scenery",
+    "empty": "No objects yet."
+  },
+  "layers": {
+    "background": "Background",
+    "midground": "Midground",
+    "foreground": "Foreground"
+  },
+  "props": {
+    "mountain": "Mountain",
+    "building": "Building",
+    "tower": "Tower",
+    "tree": "Tree",
+    "bush": "Bush",
+    "rock": "Rock",
+    "fence": "Fence",
+    "cloud": "Cloud",
+    "sun": "Sun / Moon"
+  },
+  "poses": {
+    "standing": "Standing",
+    "walking": "Walking",
+    "sitting": "Sitting"
+  },
+  "inspector": {
+    "none": "Tap an object on the canvas to edit it here.",
+    "lock": "Lock",
+    "x": "Horizontal position",
+    "y": "Ground contact (vertical)",
+    "height": "Height",
+    "width": "Width",
+    "facing": "Facing (0° = front)",
+    "snapEyeLevel": "Snap to eye level",
+    "layer": "Layer",
+    "flip": "Flip horizontally"
+  },
+  "guides": {
+    "thirds": "Rule of thirds",
+    "golden": "Golden section (phi grid)",
+    "diagonals": "Diagonals",
+    "center": "Center lines",
+    "goldenSpiral": "Golden spiral",
+    "grid": "Show perspective grid",
+    "horizon": "Show horizon and handles"
+  },
+  "roadmap": {
+    "title": "Roadmap",
+    "done": "Live",
+    "planned": "Planned",
+    "phase1": "Phase 1: Composition editor",
+    "phase2": "Phase 2: Mathematical evaluation",
+    "phase3": "Phase 3: Automatic exploration (parallel Web Workers)",
+    "phase4": "Phase 4: Evolutionary exploration",
+    "phase5": "Phase 5: AI image generation & Colab edition"
+  },
+  "settings": {
+    "title": "Settings",
+    "general": "General",
+    "language": "Language",
+    "auto": "Auto",
+    "colorScheme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "rendering": "Rendering & export",
+    "palette": "Guide image colors",
+    "paletteColor": "Color",
+    "paletteMono": "Monochrome (line art / ControlNet)",
+    "exportSize": "PNG export size (long edge)",
+    "exportSizeHint": "Resolution for AI image generation drafts",
+    "exportGuides": "Include composition guides in exported images",
+    "performance": "Performance",
+    "workerCount": "Parallel workers",
+    "workerCountHint": "0 = auto (logical cores on this device: {{cores}}). Used by exploration.",
+    "useGpu": "Use GPU (WebGPU)",
+    "useGpuHint": "Only on supported devices. Enabled per feature once measured to help.",
+    "cores": "Logical cores",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "reset": "Reset",
+    "resetSettings": "Reset settings",
+    "resetDone": "Settings reset to defaults",
+    "resetAll": "Erase all data",
+    "resetAllTitle": "Erase all data?",
+    "resetAllBody": "Deletes the composition, view options and settings stored in this browser and reloads. This cannot be undone."
+  },
+  "help": {
+    "title": "Help",
+    "intro": "Composition Explorer lets you design and explore compositions — horizon, perspective, figures and scenery — as drafts for AI illustration.",
+    "shortcuts": "Keyboard shortcuts",
+    "keys": {
+      "undo": "Undo",
+      "redo": "Redo",
+      "duplicate": "Duplicate selected object",
+      "delete": "Delete selected object",
+      "deselect": "Deselect"
+    },
+    "feedback": "Bug reports and requests:",
+    "sections": [
+      {
+        "title": "Getting started",
+        "items": [
+          "Use the panels on the left (below on phones) to set the canvas ratio, horizon and perspective.",
+          "Add figures and scenery, then drag them on the canvas.",
+          "Drag the square at the top-right of the selection to resize.",
+          "Export as PNG / SVG / JSON. JSON files can be re-imported.",
+          "Your work is saved in the browser automatically. “Clear” starts over (undo is available)."
+        ]
+      },
+      {
+        "title": "Horizon and camera",
+        "items": [
+          "Horizon height corresponds to camera tilt; its angle is the camera roll (Dutch angle).",
+          "Drag the white handle on the left for height and the blue handle on the right for tilt.",
+          "With a camera height, the eye-level rule computes a natural figure size from where it stands."
+        ]
+      },
+      {
+        "title": "Perspective",
+        "items": [
+          "1-point: receding lines meet at one vanishing point — roads, corridors, frontal buildings.",
+          "2-point: two vanishing points — looking at the corner of a building. Closer VPs mean stronger perspective.",
+          "Buildings are drawn in 3D following the vanishing points."
+        ]
+      },
+      {
+        "title": "Composition guides",
+        "items": [
+          "Overlay the rule of thirds, golden section, diagonals, center lines and the golden spiral.",
+          "Guides are only guides — breaking them on purpose can be powerful."
+        ]
+      },
+      {
+        "title": "Saving and reproducibility",
+        "body": "JSON files include a schema version and random seed so compositions can be reproduced exactly. Exploration will be reproducible from the same conditions and seed as well."
+      },
+      {
+        "title": "Coming next",
+        "items": [
+          "Phase 2: mathematical evaluation (thirds, golden ratio, visual balance, negative space…)",
+          "Phase 3: parallel exploration in Web Workers presenting 10 diverse candidates (Masterpiece ⇔ Discovery slider)",
+          "Phase 4: re-exploration from a chosen composition, mutation, favorites",
+          "Phase 5: richer AI-oriented exports and a Google Colab edition"
+        ]
+      }
+    ]
+  },
+  "about": {
+    "title": "About",
+    "tagline": "Learn from masterpieces, discover unseen compositions.",
+    "version": "Version",
+    "commit": "Commit",
+    "built": "Built",
+    "license": "License",
+    "repo": "GitHub repository",
+    "changelog": "Release notes",
+    "philosophy": "Philosophy",
+    "philosophyBody": "Theories like the golden ratio or rule of thirds are guides for evaluating a composition, not guarantees of beauty. Composition Explorer does not impose a single right answer: it respects classical theory while valuing the compositions that lie beyond it.",
+    "references": "References",
+    "referencesHint": "Ideas are referenced; no code from papers is used — everything is implemented independently.",
+    "credits": "Open-source software",
+    "creditsHint": "This app is built on the following libraries — thank you to their authors. Full texts are in",
+    "creditsError": "Could not load license information.",
+    "search": "Search packages",
+    "packages": "{{count}} packages",
+    "noLicenseText": "No license file is included in the package; see its repository."
+  }
+}
