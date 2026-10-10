@@ -40,12 +40,21 @@ export interface ChunkResult {
 }
 
 /** Deterministic per-candidate seed. */
-export function candidateSeed(seed: number, index: number): number {
-  let h = (seed ^ 0x9e3779b9) >>> 0;
-  h = Math.imul(h ^ (index + 0x7f4a7c15), 0x85ebca6b) >>> 0;
+/** murmur3 finalizer: a full-avalanche 32-bit mix. */
+function fmix32(h: number): number {
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b);
   h ^= h >>> 13;
-  h = Math.imul(h, 0xc2b2ae35) >>> 0;
+  h = Math.imul(h, 0xc2b2ae35);
   return (h ^ (h >>> 16)) >>> 0;
+}
+
+/**
+ * Deterministic per-candidate seed. The seed is mixed on its own before the
+ * index is folded in, so nearby seeds give unrelated candidate streams.
+ */
+export function candidateSeed(seed: number, index: number): number {
+  return fmix32((fmix32(seed >>> 0) + Math.imul(index + 1, 0x9e3779b1)) >>> 0);
 }
 
 /** Feature vector used for similarity (all components roughly in [0,1]). */
@@ -54,7 +63,7 @@ export function describe(c: Composition, f: Features, m: Metrics): number[] {
   const maxFig = Math.max(0, ...c.figures.map((x) => x.height));
   return [
     f.horizonY,
-    (c.horizon.angle + 30) / 60,
+    Math.min(1, Math.abs(c.horizon.angle) / 90),
     p.x,
     p.y,
     f.centroid?.x ?? 0.5,
@@ -63,7 +72,7 @@ export function describe(c: Composition, f: Features, m: Metrics): number[] {
     m.symmetry / 100,
     c.perspective.mode === 'one' ? 1 : 0,
     c.perspective.mode === 'two' ? 1 : 0,
-    Math.min(1, maxFig / 0.6),
+    Math.min(1, Math.log1p(maxFig) / Math.log1p(5)),
     Math.min(1, c.figures.length / 3),
   ];
 }
@@ -80,7 +89,12 @@ export function tagsFor(c: Composition, f: Features, m: Metrics): string[] {
   // Photographic convention: a "low horizon" sits low in the frame (big sky).
   if (f.horizonY > 0.7) t.push('lowHorizon');
   else if (f.horizonY < 0.3) t.push('highHorizon');
-  if (Math.abs(c.horizon.angle) >= 8) t.push('dutchAngle');
+  const roll = Math.abs(c.horizon.angle);
+  if (roll >= 135) t.push('inverted');
+  else if (roll >= 25) t.push('extremeDutch');
+  else if (roll >= 8) t.push('dutchAngle');
+  if (c.horizon.cameraHeight < 0.6) t.push('wormsEye');
+  else if (c.horizon.cameraHeight > 8) t.push('birdsEye');
   if (c.perspective.mode === 'two' && c.perspective.vpRight - c.perspective.vpLeft < 1.5) t.push('strongPerspective');
   else if (c.perspective.mode === 'one') t.push('onePoint');
   if (m.negativeSpace > 80) t.push('vastSpace');
@@ -89,7 +103,11 @@ export function tagsFor(c: Composition, f: Features, m: Metrics): string[] {
   if (m.golden > 75) t.push('golden');
   const maxFig = Math.max(0, ...c.figures.map((x) => x.height));
   if (c.figures.length && maxFig < 0.1) t.push('tinyFigure');
-  if (maxFig > 0.6) t.push('closeUp');
+  if (maxFig >= 3.6) t.unshift('closeUp');
+  else if (maxFig >= 2.1) t.unshift('bustShot');
+  else if (maxFig >= 1.15) t.unshift('mediumShot');
+  if (c.figures.some((x) => x.height >= 2 && Math.abs(x.facing) >= 135) && c.figures.length >= 2)
+    t.unshift('overShoulder');
   if (m.dynamics > 60) t.push('dynamic');
   if (c.figures.length >= 2) t.push('group');
   if (c.figures.some((x) => Math.abs(x.tilt) >= 20 || Math.abs(x.roll) >= 15)) t.unshift('dynamicPose');
@@ -177,7 +195,13 @@ export function runChunk({ template, spec, start, count, keep }: ChunkRequest): 
  * (1-λ)·objective + λ·(distance to the closest already-picked candidate).
  * λ = diversity. Near-duplicates are always skipped.
  */
-export function selectDiverse(pool: Candidate[], n: number, diversity: number): Candidate[] {
+export interface Quota {
+  test: (c: Candidate) => boolean;
+  /** Maximum number of picks that may satisfy `test`. */
+  max: number;
+}
+
+export function selectDiverse(pool: Candidate[], n: number, diversity: number, quotas: Quota[] = []): Candidate[] {
   const sorted = [...pool].sort((a, b) => b.objective - a.objective || a.index - b.index);
   if (sorted.length === 0) return [];
   const maxObj = sorted[0].objective || 1;
@@ -188,8 +212,10 @@ export function selectDiverse(pool: Candidate[], n: number, diversity: number): 
   while (picked.length < n) {
     let best: Candidate | null = null;
     let bestVal = -Infinity;
+    const full = quotas.filter((q) => picked.filter(q.test).length >= q.max);
     for (const c of sorted) {
       if (picked.includes(c)) continue;
+      if (full.some((q) => q.test(c))) continue;
       const dmin = minDist.get(c)!;
       if (dmin < 0.02) continue; // near-duplicate
       const val = (1 - diversity) * norm(c.objective) + diversity * Math.min(1, dmin / 0.3);
@@ -203,6 +229,29 @@ export function selectDiverse(pool: Candidate[], n: number, diversity: number): 
     for (const c of sorted) minDist.set(c, Math.min(minDist.get(c)!, distance(c.descriptor, best.descriptor)));
   }
   return picked;
+}
+
+const CLOSE_TAGS = new Set(['mediumShot', 'bustShot', 'closeUp']);
+const CAMERA_TAGS = new Set(['inverted', 'extremeDutch', 'wormsEye', 'birdsEye', 'overShoulder']);
+
+/**
+ * Final selection: diversity-aware, but keeps the mix in line with the spec so
+ * striking close-ups or camera tricks (which are always "novel") do not crowd
+ * out everything else unless asked for.
+ */
+export function selectCandidates(pool: Candidate[], spec: ExplorationSpec): Candidate[] {
+  const quotas: Quota[] = [];
+  const n = spec.present;
+  if (spec.shot === 'auto' && spec.preset !== 'portrait')
+    quotas.push({ test: (c) => c.tags.some((t) => CLOSE_TAGS.has(t)), max: Math.max(1, Math.round(n * 0.4)) });
+  if (spec.mode === 'explore')
+    quotas.push({
+      test: (c) => c.tags.some((t) => CAMERA_TAGS.has(t)),
+      max: Math.max(1, Math.round(n * (0.15 + 0.5 * spec.discovery))),
+    });
+  const picked = selectDiverse(pool, n, spec.diversity, quotas);
+  // Quotas must never leave the result short.
+  return picked.length >= Math.min(n, pool.length) ? picked : selectDiverse(pool, n, spec.diversity);
 }
 
 /** Pool size kept per chunk and globally (fixed so results do not depend on the worker count). */
@@ -226,7 +275,7 @@ export function exploreSync(
   const k = poolSize(spec);
   const r = runChunk({ template, spec, start: 0, count: spec.candidates, keep: k });
   return {
-    candidates: selectDiverse(r.pool.length ? r.pool : r.fallback, spec.present, spec.diversity),
+    candidates: selectCandidates(r.pool.length ? r.pool : r.fallback, spec),
     generated: r.generated,
     rejected: r.rejected,
   };

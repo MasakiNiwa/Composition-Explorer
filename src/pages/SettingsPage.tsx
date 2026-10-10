@@ -19,6 +19,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { detectCapabilities, probeWebGpu } from '@/lib/capabilities';
 import { useBackendStore } from '@/compute/colab';
+import { useInstallStore } from '@/lib/install';
+import { IconDeviceMobileDown } from '@tabler/icons-react';
 import { REPO_URL } from '@/lib/links';
 import { useSettingsStore, type ColorScheme, type Language } from '@/state/settingsStore';
 import type { PaletteName } from '@/core/scene/palette';
@@ -29,6 +31,7 @@ export function SettingsPage() {
   const s = useSettingsStore();
   const caps = useMemo(() => detectCapabilities(), []);
   const colab = useBackendStore((s) => s.colab);
+  const install = useInstallStore();
   const [gpu, setGpu] = useState<string | null | undefined>(undefined);
   useEffect(() => {
     void probeWebGpu().then(setGpu);
@@ -87,6 +90,32 @@ export function SettingsPage() {
                 ]}
               />
             </div>
+          </Stack>
+        </Card>
+
+        <Card withBorder>
+          <Title order={4} mb="sm">
+            {t('pwa.title')}
+          </Title>
+          <Stack gap="xs">
+            {install.installed ? (
+              <Badge color="teal" variant="light">
+                {t('pwa.installed')}
+              </Badge>
+            ) : install.canInstall ? (
+              <Button
+                leftSection={<IconDeviceMobileDown size={18} />}
+                onClick={() => void install.install()}
+                w="fit-content"
+              >
+                {t('pwa.install')}
+              </Button>
+            ) : (
+              <Text size="sm">{t('pwa.manual')}</Text>
+            )}
+            <Text size="sm" c="dimmed">
+              {t('pwa.hint')}
+            </Text>
           </Stack>
         </Card>
 

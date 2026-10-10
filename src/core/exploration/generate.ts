@@ -7,6 +7,7 @@ import { PROP_DEFAULTS } from '../model/propDefaults';
 import type { Composition, Figure, PerspectiveMode } from '../model/composition';
 import type { Rng } from '../random/prng';
 import type { ExplorationSpec, NumericParam } from './spec';
+import { applyCameraMove, applyShot, CAMERA_MOVES, pickShot } from './cameraWork';
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
@@ -39,7 +40,7 @@ export function generateCandidate(template: Composition, spec: ExplorationSpec, 
   c.seed = spec.seed;
 
   c.horizon.y = sampleParam(spec, 'horizonY', template.horizon.y, rng);
-  c.horizon.angle = clamp(sampleParam(spec, 'roll', template.horizon.angle, rng), -45, 45);
+  c.horizon.angle = clamp(sampleParam(spec, 'roll', template.horizon.angle, rng), -180, 180);
   // Small accidental tilts read as mistakes: snap |roll| < 1.5° to level.
   if (spec.params.roll.mode !== 'fixed' && Math.abs(c.horizon.angle) < 1.5) c.horizon.angle = 0;
 
@@ -97,6 +98,12 @@ export function generateCandidate(template: Composition, spec: ExplorationSpec, 
   }
   c.figures = figures;
 
+  // Framing: wide shots or portraits (medium / bust / close-up) of the main figure.
+  // A fixed horizon means a fixed camera: then only an explicitly chosen shot reframes.
+  const reframe = spec.shot !== 'auto' || spec.params.horizonY.mode !== 'fixed';
+  if (reframe && figures.some((f) => !f.locked))
+    applyShot(c, pickShot(spec.shot, spec.preset === 'portrait', rng), rng);
+
   // Props.
   if (spec.props !== 'fixed') {
     c.props = template.props.map((p) => {
@@ -126,6 +133,13 @@ export function generateCandidate(template: Composition, spec: ExplorationSpec, 
       }
       return q;
     });
+  }
+  // Bold camera work, more often with Discovery (never overriding a fixed roll).
+  if (spec.cameraWork && rng.chance(0.08 + 0.3 * spec.discovery)) {
+    const moves = CAMERA_MOVES.filter(
+      (m) => spec.params.roll.mode !== 'fixed' || (m !== 'invert' && m !== 'extremeDutch'),
+    );
+    applyCameraMove(c, rng.pick(moves), rng);
   }
   return c;
 }

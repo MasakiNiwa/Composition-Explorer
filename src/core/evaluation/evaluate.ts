@@ -8,7 +8,7 @@ import * as M from './metrics';
 import { PRESETS, weightedScore, type PresetKey, type Weights } from './presets';
 
 /** Bump when metric definitions change (part of the reproducibility key). */
-export const ENGINE_VERSION = 1;
+export const ENGINE_VERSION = 2;
 
 export interface Note {
   /** i18n key under `notes.` */

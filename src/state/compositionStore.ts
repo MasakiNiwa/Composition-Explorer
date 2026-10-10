@@ -120,7 +120,7 @@ export const useCompositionStore = create<CompositionState>()(
             const f = c.figures.find((x) => x.id === id);
             if (!f) return;
             const h = eyeLevelFigureHeight(c, f.y);
-            if (h != null) f.height = Math.min(3, Math.max(0.005, h));
+            if (h != null) f.height = Math.min(8, Math.max(0.005, h));
           }),
       }),
       {

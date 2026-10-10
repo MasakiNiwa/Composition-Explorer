@@ -222,21 +222,27 @@ export function projectFigure(fig: Figure, f: Frame, fovDeg: number): ProjectedF
   const fit = hs / ((focal * HUMAN_HEIGHT_M) / D);
   const sx = fig.x * f.W;
   const sy = fig.y * f.H;
-  // Feet position in camera space (optical center at the canvas center).
-  const X0 = ((sx - f.W / 2) * D) / focal;
-  const Y0 = (-(sy - f.H / 2) * D) / focal;
+  // Anchor: the point on the (upright) body nearest the frame's vertical
+  // center — usually the hips, the head in a close-up. It is pinned to its
+  // target on screen and the "fit" scaling happens around it, so perspective
+  // is computed where the figure is actually seen.
+  const aM = Math.min(HUMAN_HEIGHT_M, Math.max(0, ((sy - f.H / 2) / hs) * HUMAN_HEIGHT_M));
+  const tx = sx;
+  const ty = sy - hs * (aM / HUMAN_HEIGHT_M);
+  const ax = ((tx - f.W / 2) * D) / focal;
+  const ay = (-(ty - f.H / 2) * D) / focal;
+  const pelvis: V3 = [ax, ay + (PIVOT_Y * k - aM), D];
   const R = rotation(fig.facing, fig.tilt ?? 0, fig.roll ?? 0);
 
   const toCam = (p: V3): V3 => {
-    const local: V3 = [p[0] * k, (p[1] - PIVOT_Y) * k, p[2] * k];
-    const r = R(local);
-    return [X0 + r[0], Y0 + PIVOT_Y * k + r[1], D + r[2]];
+    const r = R([p[0] * k, (p[1] - PIVOT_Y) * k, p[2] * k]);
+    return [pelvis[0] + r[0], pelvis[1] + r[1], pelvis[2] + r[2]];
   };
   const project = (c: V3) => {
     const z = Math.max(D * 0.25, c[2]); // never behind (or inside) the camera
     const px = f.W / 2 + (focal * c[0]) / z;
     const py = f.H / 2 - (focal * c[1]) / z;
-    return { x: sx + (px - sx) * fit, y: sy + (py - sy) * fit, depth: z };
+    return { x: tx + (px - tx) * fit, y: ty + (py - ty) * fit, depth: z };
   };
 
   const joints = {} as ProjectedFigure['joints'];

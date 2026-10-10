@@ -54,7 +54,7 @@ describe('3D mannequin', () => {
     const r = exploreSync(strict, {
       ...defaultSpec(3),
       candidates: 100,
-      constraints: { skyMin: 0.99, avoidCenter: true, keepInFrame: true },
+      constraints: { skyMin: 5, avoidCenter: true, keepInFrame: true },
     });
     expect(r.candidates.length).toBeGreaterThan(0);
     expect(r.candidates.every((x) => x.relaxed)).toBe(true);

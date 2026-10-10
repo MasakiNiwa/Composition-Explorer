@@ -3,9 +3,10 @@
  * while applying one or two bold changes, to meet compositions you would not
  * have imagined — not to fine-tune.
  */
-import { eyeLevelFigureHeight } from '../geometry/camera';
 import type { Composition } from '../model/composition';
 import type { Rng } from '../random/prng';
+import { applyCameraMove, applyShot } from './cameraWork';
+import { clamp, rebaseOnHorizon, resizeFiguresToEyeLevel } from './rebase';
 
 export const MUTATIONS = [
   'horizonExtreme',
@@ -19,32 +20,13 @@ export const MUTATIONS = [
   'mirror',
   'dynamicPose',
   'dramaticLens',
+  'portraitShot',
+  'invertWorld',
+  'wormsEye',
+  'birdsEye',
+  'overShoulder',
 ] as const;
 export type Mutation = (typeof MUTATIONS)[number];
-
-const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
-
-function resizeFiguresToEyeLevel(c: Composition, k = 1) {
-  for (const f of c.figures) {
-    if (f.locked) continue;
-    if (f.y <= c.horizon.y + 0.01) f.y = c.horizon.y + 0.02;
-    const h = eyeLevelFigureHeight(c, f.y);
-    if (h != null) f.height = clamp(h * k, 0.01, 3);
-  }
-}
-
-/** Move ground-anchored unlocked objects so they keep their relative depth under a new horizon. */
-function rebaseOnHorizon(c: Composition, oldH: number) {
-  const newH = c.horizon.y;
-  const map = (y: number) => newH + ((y - oldH) / Math.max(0.02, 1 - oldH)) * Math.max(0.02, 1 - newH);
-  for (const f of c.figures) if (!f.locked) f.y = map(f.y);
-  for (const p of c.props) {
-    if (p.locked) continue;
-    if (p.kind === 'cloud' || p.kind === 'sun') p.y = clamp((p.y / Math.max(0.02, oldH)) * newH, -0.2, newH);
-    else if (p.layer === 'background' || p.kind === 'mountain' || p.kind === 'tower') p.y = newH + (p.y - oldH);
-    else p.y = map(p.y);
-  }
-}
 
 export function applyMutation(c: Composition, m: Mutation, rng: Rng): void {
   switch (m) {
@@ -102,7 +84,7 @@ export function applyMutation(c: Composition, m: Mutation, rng: Rng): void {
       resizeFiguresToEyeLevel(c);
       break;
     case 'dutchAngle':
-      c.horizon.angle = (rng.chance(0.5) ? 1 : -1) * rng.range(12, 28);
+      c.horizon.angle = Math.round((rng.chance(0.5) ? 1 : -1) * rng.range(12, 45));
       break;
     case 'switchPerspective':
       c.perspective.mode = c.perspective.mode === 'two' ? 'one' : 'two';
@@ -135,6 +117,21 @@ export function applyMutation(c: Composition, m: Mutation, rng: Rng): void {
       }
       break;
     }
+    case 'portraitShot':
+      applyShot(c, rng.pick(['medium', 'bust', 'bust', 'closeUp'] as const), rng);
+      break;
+    case 'invertWorld':
+      applyCameraMove(c, 'invert', rng);
+      break;
+    case 'wormsEye':
+      applyCameraMove(c, 'wormsEye', rng);
+      break;
+    case 'birdsEye':
+      applyCameraMove(c, 'birdsEye', rng);
+      break;
+    case 'overShoulder':
+      applyCameraMove(c, 'overShoulder', rng);
+      break;
     case 'mirror':
       for (const f of c.figures)
         if (!f.locked) {
@@ -170,6 +167,6 @@ export function mutate(
   // Light jitter so repeated mutations of the same kind differ.
   const j = 0.02 + 0.05 * strength;
   for (const f of c.figures) if (!f.locked) f.x = clamp(f.x + rng.normal() * j, -0.2, 1.2);
-  c.horizon.y = clamp(c.horizon.y + rng.normal() * j * 0.5, -0.2, 1.2);
+  c.horizon.y = clamp(c.horizon.y + rng.normal() * j * 0.5, -1, 2);
   return { composition: c, applied };
 }

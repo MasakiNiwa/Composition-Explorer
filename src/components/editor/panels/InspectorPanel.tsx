@@ -66,7 +66,7 @@ export function InspectorPanel() {
         label={t('inspector.y')}
         value={item.y}
         min={-0.5}
-        max={1.5}
+        max={Math.max(1.5, Math.min(8, item.y + 0.5))}
         step={0.005}
         displayScale={100}
         unit="%"
@@ -91,7 +91,7 @@ export function InspectorPanel() {
           label={t('inspector.height')}
           value={fig.height}
           min={0.01}
-          max={1.5}
+          max={6}
           step={0.005}
           displayScale={100}
           unit="%"

@@ -55,3 +55,10 @@ body {
 .ce-sheet-translucent .mantine-Slider-track::before {
   background-color: color-mix(in srgb, var(--mantine-color-gray-5) 70%, transparent);
 }
+
+/* Editor zoom: keep guides, grid and the horizon hairline-thin at any zoom. */
+.ce-canvas-wrap [data-layer='guides'] *,
+.ce-canvas-wrap [data-layer='horizon'] *,
+.ce-canvas-wrap [data-layer='environment'] line {
+  vector-effect: non-scaling-stroke;
+}

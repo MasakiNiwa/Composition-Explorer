@@ -75,7 +75,9 @@ export function symmetry(f: Features): number {
   let s = total > 0 ? 1 - diff / total : 1;
   // A centered one-point VP is the classic symmetric setup.
   if (f.vps.length === 1) s = 0.75 * s + 0.25 * gauss(Math.abs(f.vps[0].x - 0.5), 0.06);
-  return pct(s * gauss(f.roll, 6));
+  // An upside-down frame (≈180°) can be just as symmetric as a level one.
+  const r = Math.abs(f.roll) % 180;
+  return pct(s * gauss(Math.min(r, 180 - r), 6));
 }
 
 /** Visual balance: weighted centroid close to the canvas center (horizontal matters most). */
@@ -138,7 +140,9 @@ export function negativeSpace(f: Features): number {
 
 /** Dynamics: tilt, asymmetry, diagonal placement and perspective strength. */
 export function dynamics(f: Features, sym: number): number {
-  const tilt = clamp01(Math.abs(f.roll) / 20);
+  // Tilt energy peaks at oblique angles; an inverted world is striking in itself.
+  const r = Math.abs(f.roll) % 180;
+  const tilt = Math.max(clamp01(Math.min(r, 180 - r) / 20), Math.abs(f.roll) > 135 ? 0.8 : 0);
   const asym = 1 - sym / 100;
   let persp = 0;
   if (f.vps.length === 1) persp = clamp01(Math.abs(f.vps[0].x - 0.5) / 0.5);
