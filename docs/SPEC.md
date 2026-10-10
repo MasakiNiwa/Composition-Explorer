@@ -74,7 +74,7 @@ JSON に `schemaVersion` と `seed` を含める。探索は `(条件, seed, エ
 | --- | --- | --- |
 | 1 | 構図エディター（キャンバス、地平線、パース、人物、前景/中景/遠景、PNG/SVG/JSON、設定/ヘルプ/バージョン情報、クリア） | ✅ v0.1 |
 | 2 | 数学的構図評価（三分割、黄金比、対称性、視覚的重心、視線誘導、奥行き、余白、ダイナミズム、パース整合性、プリセット、可視化） | ✅ v0.2 |
-| 3 | 自動探索（Fixed/Range/Free、シード付き生成、制約、Worker 並列、多様性選択、Masterpiece⇔Discovery） | 予定 |
+| 3 | 自動探索（Fixed/Range/Free、シード付き生成、制約、Worker 並列、多様性選択、Masterpiece⇔Discovery） | ✅ v0.3 |
 | 4 | 進化的探索（選択構図から再探索、突然変異、履歴、お気に入り、NSGA-II） | 予定 |
 | 5 | AI 生成連携（深度マップ等の出力）、Colab Edition | 予定 |
 
@@ -104,3 +104,18 @@ JSON に `schemaVersion` と `seed` を含める。探索は `(条件, seed, エ
 
 プリセットは指標の重み。負の重みは「その指標が低いほど高評価」を意味し、Experimental などに使う。
 `ENGINE_VERSION` は再現性キーの一部で、指標定義を変えたら上げる。
+
+## 6. Composition Explorer（Phase 3）
+
+`src/core/exploration/`（純粋 TS）＋ `src/compute/`（実行環境）。
+
+1. **生成** `generateCandidate(template, spec, rng)`：現在の構図をテンプレートに、Fixed/Range/Free に従ってパラメータを標本化。
+   ロックしたオブジェクトは固定。Discovery が高いと Free パラメータが範囲の端（大胆な値）を取りやすくなる。
+2. **評価** Phase 2 の `computeMetrics`。制約（空の最小面積・中央回避・注目点を画面内）違反は除外。
+3. **目的関数** `objective = (1−d)·preset + d·(0.5·experimental + 0.5·novelty)`（d = Discovery）。
+   novelty はテンプレートとの特徴ベクトル距離。
+4. **多様性選択** MMR（Maximal Marginal Relevance）：`(1−λ)·objective + λ·最近傍候補との距離`、λ = 多様性。近似重複は除外。
+5. **並列化** 250 件固定のチャンクを Web Worker プール（Comlink）に配布。各チャンクの上位 K 件を統合するため、
+   **結果はワーカー数に依存せず**、`(構図, 条件, seed, ENGINE_VERSION)` から完全に再現できる。
+   候補ごとの乱数シードは `hash(seed, index)`。
+6. **ComputeBackend** インターフェイス：現在は `LocalWorkerBackend`。Colab 版ではこれを Python サーバーに差し替える。

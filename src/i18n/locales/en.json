@@ -22,7 +22,9 @@
     "objects": "Figures & scenery",
     "guides": "Composition guides",
     "inspector": "Selected object",
-    "evaluation": "Composition evaluation"
+    "evaluation": "Composition evaluation",
+    "explore": "Explore",
+    "conditions": "Exploration conditions"
   },
   "toolbar": {
     "undo": "Undo",
@@ -212,13 +214,23 @@
         ]
       },
       {
+        "title": "Exploration (Phase 3)",
+        "items": [
+          "“Explore” in the right panel (below the canvas on phones) generates and evaluates many variants of the current composition and presents candidates with different characters.",
+          "The Masterpiece ⇔ Discovery slider balances classical polish against novelty beyond the rules.",
+          "Higher diversity avoids similar candidates.",
+          "“Exploration conditions” sets Fixed / Range / Free per parameter, plus constraints such as minimum sky area.",
+          "Exploration runs in parallel Web Workers without blocking the UI (worker count in Settings).",
+          "The same composition, conditions and seed always reproduce the same result."
+        ]
+      },
+      {
         "title": "Saving and reproducibility",
         "body": "JSON files include a schema version and random seed so compositions can be reproduced exactly. Exploration will be reproducible from the same conditions and seed as well."
       },
       {
         "title": "Coming next",
         "items": [
-          "Phase 3: parallel exploration in Web Workers presenting 10 diverse candidates (Masterpiece ⇔ Discovery slider)",
           "Phase 4: re-exploration from a chosen composition, mutation, favorites",
           "Phase 5: richer AI-oriented exports and a Google Colab edition"
         ]
@@ -321,5 +333,64 @@
     "lotsOfSpace": "Lots of negative space — good for solitude or calm.",
     "unbalanced": "Visual weight leans to one side. Add something opposite unless tension is intended.",
     "empty": "Add objects to evaluate more metrics."
+  },
+  "explore": {
+    "conditionsHint": "For each parameter choose Fixed (current value), Range (search inside a range) or Free (let the app decide).",
+    "mode": {
+      "fixed": "Fixed",
+      "range": "Range",
+      "free": "Free"
+    },
+    "params": {
+      "horizonY": "Horizon height",
+      "roll": "Tilt (roll)",
+      "vp": "Vanishing point (1-pt)",
+      "vpSpan": "VP spacing (2-pt)",
+      "figureX": "Figure position",
+      "figureDepth": "Figure depth (ground contact)",
+      "figureSize": "Figure size"
+    },
+    "perspectiveMode": "Perspective type",
+    "figureCount": "Number of figures",
+    "eyeLevelSizing": "Size figures by the eye-level rule",
+    "props": "Scenery objects",
+    "propsMode": {
+      "fixed": "Fixed (keep)",
+      "jitter": "Move slightly",
+      "free": "Move freely"
+    },
+    "constraints": "Constraints",
+    "skyMin": "Minimum sky area",
+    "off": "off",
+    "avoidCenter": "Keep the main subject off-center",
+    "keepInFrame": "Keep the subject's focus inside the frame",
+    "lockHint": "Locked objects never move during exploration.",
+    "resetConditions": "Reset exploration conditions",
+    "discoveryLabel": "Classic {{m}}% + Experimental {{d}}%",
+    "discoveryHint": "Left: polished compositions faithful to art theory. Right: shakes up the metrics to look beyond the rules.",
+    "diversity": "Diversity",
+    "candidates": "Candidates",
+    "present": "Show",
+    "seed": "Seed",
+    "run": "Explore compositions",
+    "cancel": "Cancel",
+    "stats": "Evaluated {{n}} (rejected {{rejected}}) · {{ms}} ms · {{workers}} workers",
+    "scoreTooltip": "Preset score {{score}} / novelty {{novelty}}",
+    "applyHint": "Tap a candidate to load it on the canvas (Undo restores). Exploring again starts from the loaded composition."
+  },
+  "tags": {
+    "highHorizon": "high horizon",
+    "lowHorizon": "low horizon",
+    "dutchAngle": "dutch angle",
+    "strongPerspective": "strong perspective",
+    "onePoint": "1-point",
+    "vastSpace": "vast space",
+    "symmetric": "symmetric",
+    "thirds": "thirds",
+    "golden": "golden",
+    "tinyFigure": "tiny figure",
+    "closeUp": "close-up",
+    "dynamic": "dynamic",
+    "group": "group"
   }
 }

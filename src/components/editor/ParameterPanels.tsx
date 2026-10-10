@@ -1,6 +1,7 @@
 import { Accordion } from '@mantine/core';
-import { IconBox, IconFrame, IconGridDots, IconLine, IconPerspective } from '@tabler/icons-react';
+import { IconAdjustments, IconBox, IconFrame, IconGridDots, IconLine, IconPerspective } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
+import { ConditionsPanel } from '@/components/exploration/ConditionsPanel';
 import { CanvasPanel } from './panels/CanvasPanel';
 import { GuidesPanel } from './panels/GuidesPanel';
 import { HorizonPanel } from './panels/HorizonPanel';
@@ -13,6 +14,7 @@ const SECTIONS = [
   { value: 'perspective', icon: IconPerspective, Panel: PerspectivePanel },
   { value: 'objects', icon: IconBox, Panel: ObjectsPanel },
   { value: 'guides', icon: IconGridDots, Panel: GuidesPanel },
+  { value: 'conditions', icon: IconAdjustments, Panel: ConditionsPanel },
 ] as const;
 
 export function ParameterPanels() {
