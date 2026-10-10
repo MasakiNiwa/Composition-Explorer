@@ -1,6 +1,8 @@
-import { Box } from '@mantine/core';
+import { Box, Button, Tooltip } from '@mantine/core';
+import { IconZoomReset } from '@tabler/icons-react';
+import { useTranslation } from 'react-i18next';
 import { useElementSize } from '@mantine/hooks';
-import { useCallback, useMemo, useRef, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { fromUnits, screenToWorld, vanishingPoints, type Frame } from '@/core/geometry/camera';
 import { buildScene } from '@/core/scene/buildScene';
 import type { Vec2 } from '@/core/geometry/vec';
@@ -37,10 +39,12 @@ interface DragSession {
 }
 
 const DRAG_THRESHOLD_PX = 4;
+const MAX_ZOOM = 8;
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
 export function CanvasView() {
+  const { t } = useTranslation();
   const composition = useCompositionStore((s) => s.composition);
   const update = useCompositionStore((s) => s.update);
   const { selectedId, select, guides, showGrid, showHorizon, showAnalysis } = useViewStore();
@@ -61,8 +65,60 @@ export function CanvasView() {
   const ratio = W / H;
   const fitW = boxW > 0 && boxH > 0 ? Math.min(boxW, boxH * ratio) : 0;
   const fitH = fitW / ratio;
-  const k = fitW > 0 ? W / fitW : 1; // scene units per CSS pixel
+  // ---- Zoom / pan: a viewBox window onto the scene -----------------------
+  const [view, setView] = useState({ x: 0, y: 0, w: W });
+  const zoom = W / view.w;
+  const clampView = useCallback(
+    (v: { x: number; y: number; w: number }) => {
+      const w = clamp(v.w, W / MAX_ZOOM, W);
+      const h = w / ratio;
+      return { x: clamp(v.x, 0, W - w), y: clamp(v.y, 0, H - h), w };
+    },
+    [W, H, ratio],
+  );
+  // Aspect ratio change → back to the full view.
+  useEffect(() => setView({ x: 0, y: 0, w: W }), [W, H]);
+  const resetView = () => setView({ x: 0, y: 0, w: W });
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const pinch = useRef<{ d0: number; w0: number; anchor: Vec2 } | null>(null);
+  const pan = useRef<{ cx: number; cy: number; v0: typeof view } | null>(null);
+
+  const k = fitW > 0 ? view.w / fitW : 1; // scene units per CSS pixel
   const handleR = 9 * k;
+
+  /** Zoom to `w` keeping scene point `anchor` under client point (cx, cy). */
+  const zoomAround = useCallback(
+    (w: number, anchor: Vec2, cx: number, cy: number) => {
+      const rect = svgRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const nw = clamp(w, W / MAX_ZOOM, W);
+      const fx = (cx - rect.left) / rect.width;
+      const fy = (cy - rect.top) / rect.height;
+      setView(clampView({ x: anchor.x - fx * nw, y: anchor.y - fy * (nw / ratio), w: nw }));
+    },
+    [W, ratio, clampView],
+  );
+
+  // Mouse wheel / trackpad zoom (non-passive so the page does not scroll).
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const m = svg.getScreenCTM()?.inverse();
+      if (!m) return;
+      const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m);
+      setView((v) => {
+        const nw = clamp(v.w * Math.exp(e.deltaY * 0.0015), W / MAX_ZOOM, W);
+        const rect = svg.getBoundingClientRect();
+        const fx = (e.clientX - rect.left) / rect.width;
+        const fy = (e.clientY - rect.top) / rect.height;
+        return clampView({ x: p.x - fx * nw, y: p.y - fy * (nw / ratio), w: nw });
+      });
+    };
+    svg.addEventListener('wheel', onWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', onWheel);
+  }, [W, ratio, clampView, fitW]);
 
   const toScene = useCallback((e: { clientX: number; clientY: number }, inv?: DOMMatrix): Vec2 => {
     const m = inv ?? svgRef.current?.getScreenCTM()?.inverse();
@@ -86,12 +142,52 @@ export function CanvasView() {
     };
   };
 
+  /** Finish the current drag, collapsing it into a single undo step. */
+  const endSession = () => {
+    const s = session.current;
+    if (!s) return;
+    session.current = null;
+    const finalC = useCompositionStore.getState().composition;
+    const temporal = useCompositionStore.temporal.getState();
+    if (s.moved && finalC !== s.pre) {
+      useCompositionStore.setState({ composition: s.pre });
+      temporal.resume();
+      useCompositionStore.setState({ composition: finalC });
+    } else {
+      temporal.resume();
+    }
+  };
+
+  // Track every pointer (capture phase, before handles stop propagation) so a
+  // second finger turns any gesture into pinch-zoom.
+  const onPointerDownCapture = (e: ReactPointerEvent<SVGSVGElement>) => {
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size === 2) {
+      e.stopPropagation();
+      e.preventDefault();
+      svgRef.current?.setPointerCapture(e.pointerId);
+      endSession();
+      pan.current = null;
+      const [a, b] = [...pointers.current.values()];
+      pinch.current = {
+        d0: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)),
+        w0: view.w,
+        anchor: toScene({ clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 }),
+      };
+    }
+  };
+
   const onPointerDown = (e: ReactPointerEvent<SVGSVGElement>) => {
-    if (e.button !== 0) return;
+    if (e.button !== 0 || pinch.current) return;
     const target = (e.target as Element).closest('[data-id]');
     const id = target?.getAttribute('data-id');
     if (!id) {
       select(null);
+      // Zoomed in: dragging empty space pans the view.
+      if (zoom > 1.001) {
+        svgRef.current?.setPointerCapture(e.pointerId);
+        pan.current = { cx: e.clientX, cy: e.clientY, v0: view };
+      }
       return;
     }
     select(id);
@@ -110,6 +206,21 @@ export function CanvasView() {
   };
 
   const onPointerMove = (e: ReactPointerEvent<SVGSVGElement>) => {
+    if (pointers.current.has(e.pointerId)) pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch.current && pointers.current.size >= 2) {
+      const [a, b] = [...pointers.current.values()];
+      const d = Math.max(1, Math.hypot(a.x - b.x, a.y - b.y));
+      zoomAround(pinch.current.w0 * (pinch.current.d0 / d), pinch.current.anchor, (a.x + b.x) / 2, (a.y + b.y) / 2);
+      return;
+    }
+    if (pan.current) {
+      const rect = svgRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const p = pan.current;
+      const s = p.v0.w / rect.width;
+      setView(clampView({ x: p.v0.x - (e.clientX - p.cx) * s, y: p.v0.y - (e.clientY - p.cy) * s, w: p.v0.w }));
+      return;
+    }
     const s = session.current;
     if (!s) return;
     // Ignore tiny movements so a tap only selects.
@@ -129,8 +240,8 @@ export function CanvasView() {
         update((c) => {
           const it = d.isFigure ? c.figures.find((f) => f.id === d.id) : c.props.find((p) => p.id === d.id);
           if (!it) return;
-          it.x = clamp(d.orig.x + delta.x, -0.5, 1.5);
-          it.y = clamp(d.orig.y + delta.y, -0.5, 1.5);
+          it.x = clamp(d.orig.x + delta.x, -2, 3);
+          it.y = clamp(d.orig.y + delta.y, -2, 8);
         });
         break;
       }
@@ -140,7 +251,7 @@ export function CanvasView() {
         update((c) => {
           if (d.isFigure) {
             const it = c.figures.find((x) => x.id === d.id);
-            if (it) it.height = clamp(d.orig.h * f, 0.01, 3);
+            if (it) it.height = clamp(d.orig.h * f, 0.01, 8);
           } else {
             const it = c.props.find((x) => x.id === d.id);
             if (it) {
@@ -160,7 +271,7 @@ export function CanvasView() {
         const a = (Math.atan2(sp.y - s.frame.center.y, sp.x - s.frame.center.x) * 180) / Math.PI;
         let next = d.orig + (a - d.startAngle);
         next = ((next + 540) % 360) - 180;
-        update((c) => void (c.horizon.angle = clamp(Math.round(next * 10) / 10, -45, 45)));
+        update((c) => void (c.horizon.angle = clamp(Math.round(next * 10) / 10, -180, 180)));
         break;
       }
       case 'vp': {
@@ -190,20 +301,15 @@ export function CanvasView() {
   };
 
   const onPointerUp = (e: ReactPointerEvent<SVGSVGElement>) => {
-    const s = session.current;
-    if (!s) return;
-    session.current = null;
-    svgRef.current?.releasePointerCapture(e.pointerId);
-    // Collapse the whole drag into a single undo step.
-    const finalC = useCompositionStore.getState().composition;
-    const temporal = useCompositionStore.temporal.getState();
-    if (s.moved && finalC !== s.pre) {
-      useCompositionStore.setState({ composition: s.pre });
-      temporal.resume();
-      useCompositionStore.setState({ composition: finalC });
-    } else {
-      temporal.resume();
+    pointers.current.delete(e.pointerId);
+    if (svgRef.current?.hasPointerCapture(e.pointerId)) svgRef.current.releasePointerCapture(e.pointerId);
+    if (pinch.current) {
+      // Wait until every finger is lifted before allowing new gestures.
+      if (pointers.current.size === 0) pinch.current = null;
+      return;
     }
+    pan.current = null;
+    endSession();
   };
 
   // ---- Handles (world space, rendered inside the rolled group) -----------
@@ -267,12 +373,26 @@ export function CanvasView() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        position: 'relative',
       }}
     >
+      {zoom > 1.01 && (
+        <Tooltip label={t('editor.resetZoom')}>
+          <Button
+            size="compact-xs"
+            variant="default"
+            leftSection={<IconZoomReset size={14} />}
+            onClick={resetView}
+            style={{ position: 'absolute', top: 8, right: 8, zIndex: 4, opacity: 0.92 }}
+          >
+            {Math.round(zoom * 100)}%
+          </Button>
+        </Tooltip>
+      )}
       {fitW > 0 && (
         <svg
           ref={svgRef}
-          viewBox={`0 0 ${W} ${H}`}
+          viewBox={`${view.x} ${view.y} ${view.w} ${view.w / ratio}`}
           width={fitW}
           height={fitH}
           role="img"
@@ -281,7 +401,9 @@ export function CanvasView() {
             boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
             background: '#fff',
           }}
+          onPointerDownCapture={onPointerDownCapture}
           onPointerDown={onPointerDown}
+          onDoubleClick={(e) => !(e.target as Element).closest('[data-id]') && resetView()}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}

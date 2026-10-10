@@ -28,7 +28,7 @@ export type Layer = (typeof LAYERS)[number];
 export const PROP_KINDS = ['mountain', 'building', 'tower', 'tree', 'bush', 'rock', 'fence', 'cloud', 'sun'] as const;
 export type PropKind = (typeof PROP_KINDS)[number];
 
-const unit = z.number().min(-2).max(3);
+const unit = z.number().min(-6).max(8);
 
 export const figureSchema = z.object({
   id: z.string(),
@@ -37,7 +37,7 @@ export const figureSchema = z.object({
   /** Feet (ground contact) y in world space. */
   y: unit,
   /** Body height as a fraction of canvas height. */
-  height: z.number().min(0.005).max(3),
+  height: z.number().min(0.005).max(8),
   /** Facing direction in degrees. 0 = toward viewer, 90 = right, -90 = left, 180 = away. */
   /** Rotation around the vertical axis (yaw). 0 = toward viewer, 90 = right. */
   facing: z.number().min(-180).max(180),
@@ -79,7 +79,7 @@ export const compositionSchema = z.object({
     /** Horizon y at the canvas center, in world space (0 = top, 1 = bottom). */
     y: z.number().min(-1).max(2),
     /** Camera roll in degrees (positive = clockwise). */
-    angle: z.number().min(-45).max(45),
+    angle: z.number().min(-180).max(180),
     /** Camera (eye) height in meters, used by the eye-level rule for figures. */
     cameraHeight: z.number().min(0.1).max(1000),
     /** Vertical field of view (lens). Wide angles exaggerate figure foreshortening. */

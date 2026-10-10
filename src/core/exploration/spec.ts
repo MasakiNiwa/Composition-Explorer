@@ -4,6 +4,7 @@
  * Free (let the explorer decide inside sensible bounds).
  */
 import type { PresetKey } from '../evaluation/presets';
+import type { ShotChoice } from './cameraWork';
 
 export type ParamMode = 'fixed' | 'range' | 'free';
 
@@ -44,6 +45,10 @@ export interface ExplorationSpec {
   figureCount: { mode: ParamMode; min: number; max: number };
   /** Size figures by the eye-level rule (±15%) instead of figureSize. */
   eyeLevelSizing: boolean;
+  /** Framing of the main figure; 'auto' mixes wide shots with portraits. */
+  shot: ShotChoice;
+  /** Occasionally try bold camera moves (inverted world, worm's/bird's-eye, over-the-shoulder). */
+  cameraWork: boolean;
   props: PropsMode;
   constraints: {
     /** Minimum sky fraction (horizon height); 0 disables. */
@@ -82,6 +87,8 @@ export function defaultSpec(seed = 1): ExplorationSpec {
     perspectiveMode: 'free',
     figureCount: { mode: 'fixed', min: 1, max: 2 },
     eyeLevelSizing: true,
+    shot: 'auto',
+    cameraWork: true,
     props: 'jitter',
     constraints: { skyMin: 0, avoidCenter: false, keepInFrame: true },
     candidates: 1000,

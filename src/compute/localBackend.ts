@@ -4,7 +4,7 @@ import {
   mergePools,
   poolSize,
   runChunk,
-  selectDiverse,
+  selectCandidates,
   type Candidate,
   type ChunkResult,
 } from '@/core/exploration/explore';
@@ -87,7 +87,7 @@ export class LocalWorkerBackend implements ComputeBackend {
         k,
       );
     return {
-      candidates: selectDiverse(pool, spec.present, spec.diversity),
+      candidates: selectCandidates(pool, spec),
       generated: spec.candidates,
       rejected,
       elapsedMs: performance.now() - t0,

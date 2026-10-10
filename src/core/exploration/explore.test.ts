@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createSampleComposition } from '../model/composition';
-import { CHUNK_SIZE, exploreSync, mergePools, poolSize, runChunk, selectDiverse } from './explore';
+import { CHUNK_SIZE, exploreSync, mergePools, poolSize, runChunk, selectCandidates } from './explore';
 import { defaultSpec } from './spec';
 
 describe('exploration', () => {
@@ -21,7 +21,7 @@ describe('exploration', () => {
     const chunks = [0, 1].map(
       (i) => runChunk({ template, spec, start: i * CHUNK_SIZE, count: CHUNK_SIZE, keep: k }).pool,
     );
-    const parallel = selectDiverse(mergePools(chunks, k), spec.present, spec.diversity).map((c) => c.index);
+    const parallel = selectCandidates(mergePools(chunks, k), spec).map((c) => c.index);
     expect(parallel).toEqual(exploreSync(template, spec).candidates.map((c) => c.index));
   });
 
@@ -58,5 +58,14 @@ describe('exploration', () => {
     const r = exploreSync(template, { ...defaultSpec(3), candidates: 200 });
     for (const c of r.candidates)
       for (const f of c.composition.figures) expect(f.y).toBeGreaterThan(c.composition.horizon.y);
+  });
+});
+
+describe('candidateSeed', () => {
+  it('nearby seeds do not produce shifted copies of each other', async () => {
+    const { candidateSeed } = await import('./explore');
+    const a = new Set(Array.from({ length: 2000 }, (_, i) => candidateSeed(5, i)));
+    const overlap = Array.from({ length: 2000 }, (_, i) => candidateSeed(6, i)).filter((x) => a.has(x)).length;
+    expect(overlap).toBe(0);
   });
 });

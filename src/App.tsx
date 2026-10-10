@@ -4,6 +4,7 @@ import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppLayout } from './components/AppLayout';
+import { PwaUpdater } from './components/PwaUpdater';
 import { SettingsSync } from './components/SettingsSync';
 import { EditorPage } from './pages/EditorPage';
 import { theme } from './theme';
@@ -36,6 +37,7 @@ export function App() {
     <MantineProvider theme={theme} defaultColorScheme="auto" colorSchemeManager={colorSchemeManager}>
       <Notifications position="bottom-center" />
       <SettingsSync />
+      <PwaUpdater />
       <ModalsProvider>
         <HashRouter>
           <Routes>

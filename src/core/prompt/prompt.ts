@@ -21,10 +21,15 @@ export function compositionPrompt(c: Composition): string {
   else if (f.horizonY < 0.28) parts.push('high horizon', 'looking down at the ground');
   else if (Math.abs(f.horizonY - 0.5) < 0.05) parts.push('horizon at center');
   else parts.push(`horizon on the ${f.horizonY < 0.5 ? 'upper' : 'lower'} third`);
-  if (c.horizon.cameraHeight > 6) parts.push("bird's-eye view", 'high camera');
-  else if (c.horizon.cameraHeight < 0.8) parts.push('low angle shot', 'camera near the ground');
+  if (c.horizon.cameraHeight > 8) parts.push("bird's-eye view", 'looking straight down');
+  else if (c.horizon.cameraHeight > 3) parts.push('high angle shot');
+  else if (c.horizon.cameraHeight < 0.5) parts.push("worm's-eye view", 'extreme low angle');
+  else if (c.horizon.cameraHeight < 1.1) parts.push('low angle shot');
   else parts.push('eye-level shot');
-  if (Math.abs(c.horizon.angle) >= 6) parts.push('dutch angle', 'tilted horizon');
+  const roll = Math.abs(c.horizon.angle);
+  if (roll >= 135) parts.push('upside-down composition', 'inverted world');
+  else if (roll >= 25) parts.push('extreme dutch angle', 'strongly tilted horizon');
+  else if (roll >= 6) parts.push('dutch angle', 'tilted horizon');
   if (c.horizon.fov >= 80) parts.push('wide-angle lens', 'exaggerated perspective');
   else if (c.horizon.fov <= 25) parts.push('telephoto lens', 'compressed perspective');
 
@@ -42,9 +47,13 @@ export function compositionPrompt(c: Composition): string {
         ? 'tiny distant figure'
         : s.height < 0.3
           ? 'small figure'
-          : s.height < 0.7
-            ? 'medium shot of a person'
-            : 'close-up of a person';
+          : s.height < 1.15
+            ? 'full-body shot of a person'
+            : s.height < 2.1
+              ? 'medium shot of a person'
+              : s.height < 3.6
+                ? 'bust shot portrait'
+                : 'close-up portrait, face filling the frame';
     parts.push(`${size} in the ${vertical(s.focus.y)} ${third(s.focus.x)} of the frame`);
     const dir = Math.sin((c.figures.find((x) => x.id === s.id)?.facing ?? 0) * (Math.PI / 180));
     const fig = c.figures.find((x) => x.id === s.id);
@@ -52,7 +61,10 @@ export function compositionPrompt(c: Composition): string {
     if (fig && fig.pose !== 'standing') parts.push(`${fig.pose} pose`);
     if (fig && (Math.abs(fig.tilt) >= 20 || Math.abs(fig.roll) >= 15))
       parts.push('dynamic pose', 'dramatic foreshortening');
-  } else if (figs.length > 1) parts.push(`${figs.length} people`);
+  } else if (figs.length > 1) {
+    parts.push(`${figs.length} people`);
+    if (c.figures.some((x) => x.height >= 2 && Math.abs(x.facing) >= 135)) parts.push('over-the-shoulder shot');
+  }
 
   const kinds = new Set(c.props.map((p) => p.kind));
   if (kinds.has('mountain')) parts.push('mountains in the distance');

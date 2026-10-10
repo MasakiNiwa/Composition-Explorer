@@ -15,6 +15,7 @@ export const PRESET_KEYS = [
   'negativeSpace',
   'cinematic',
   'experimental',
+  'portrait',
 ] as const;
 export type PresetKey = (typeof PRESET_KEYS)[number];
 export type Weights = Partial<Record<MetricKey, number>>;
@@ -37,6 +38,7 @@ export const PRESETS: Record<PresetKey, Weights> = {
   leadingLines: { flow: 3, depth: 1, perspective: 1 },
   negativeSpace: { negativeSpace: 3, thirds: 0.5, perspective: 1 },
   cinematic: { thirds: 1, depth: 1.5, flow: 1, negativeSpace: 1, perspective: 1 },
+  portrait: { thirds: 2, golden: 1, balance: 1, flow: 1.5, negativeSpace: 0.5, depth: 0.5 },
   experimental: { dynamics: 2, thirds: -1, golden: -0.5, symmetry: -0.5, negativeSpace: 0.5 },
 };
 

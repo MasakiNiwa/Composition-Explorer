@@ -12,7 +12,9 @@
     "cancel": "Cancel"
   },
   "editor": {
-    "canvasHint": "Drag objects to move them; drag the top-right square to resize. White dot: horizon height, blue dot: tilt, red dots: vanishing points."
+    "canvasHint": "Drag objects to move them; drag the top-right square to resize. White dot: horizon height, blue dot: tilt, red dots: vanishing points. Pinch (wheel on PC) to zoom; drag empty space to pan while zoomed.",
+    "resetZoom": "Back to 100% (or double-click)",
+    "zoomHint": "Pinch (wheel on PC) to zoom; drag empty space to pan while zoomed."
   },
   "sections": {
     "canvas": "Canvas",
@@ -235,6 +237,31 @@
         ]
       },
       {
+        "title": "Zoom and pan",
+        "items": [
+          "Pinch the canvas with two fingers on phones, or use the mouse wheel / trackpad on a PC.",
+          "While zoomed in, drag empty space to pan.",
+          "The “…%” button at the top-right (or a double-click on PC) returns to 100%."
+        ]
+      },
+      {
+        "title": "Portraits and camera work",
+        "items": [
+          "“Shot” in the exploration settings picks wide, full body, medium, bust or close-up framing. “Auto” mixes close framings into wide shots.",
+          "The “Portrait” evaluation preset focuses on close framings of the figure.",
+          "When moving in on a figure the horizon is derived from the camera height, so the background (horizon, mountains, buildings) stays consistent.",
+          "“Try bold camera work” mixes in inverted worlds, steep tilts, worm's-eye, bird's-eye and over-the-shoulder shots. Mutation offers the same moves.",
+          "The horizon tilt goes to ±180°, so you can also build upside-down compositions by hand."
+        ]
+      },
+      {
+        "title": "Use as an app (PWA)",
+        "items": [
+          "Install it to your home screen from Settings → “Use as an app” (iPhone/iPad: Share → “Add to Home Screen”).",
+          "After the first visit it works offline. When a new version is published an “Update” button appears."
+        ]
+      },
+      {
         "title": "Perspective",
         "items": [
           "1-point: receding lines meet at one vanishing point — roads, corridors, frontal buildings.",
@@ -338,7 +365,8 @@
     "leadingLines": "Leading lines",
     "negativeSpace": "Negative space",
     "cinematic": "Cinematic",
-    "experimental": "Experimental (break the rules)"
+    "experimental": "Experimental (break the rules)",
+    "portrait": "Portrait (close on the figure)"
   },
   "metrics": {
     "thirds": {
@@ -451,7 +479,19 @@
     "restored": "Results restored from history.",
     "failed": "Exploration failed",
     "relaxedTitle": "No candidate met the constraints",
-    "relaxedBody": "Showing the closest candidates instead. Relax the conditions (sky area, off-center, in frame) or unlock objects to find more."
+    "relaxedBody": "Showing the closest candidates instead. Relax the conditions (sky area, off-center, in frame) or unlock objects to find more.",
+    "shot": "Shot (how the figure is framed)",
+    "shotHint": "“Auto” mixes close framings of the figure into the usual wide shots.",
+    "shots": {
+      "auto": "Auto",
+      "wide": "Wide (scenery)",
+      "full": "Full body",
+      "medium": "Medium (waist up)",
+      "bust": "Bust shot",
+      "closeUp": "Close-up (face)"
+    },
+    "cameraWork": "Try bold camera work",
+    "cameraWorkHint": "Occasionally mixes in inverted worlds, steep tilts, worm's-eye, bird's-eye and over-the-shoulder shots (more with Discovery)."
   },
   "tags": {
     "highHorizon": "high horizon",
@@ -468,7 +508,14 @@
     "dynamic": "dynamic",
     "group": "group",
     "dynamicPose": "dynamic pose",
-    "wideAngle": "wide-angle"
+    "wideAngle": "wide-angle",
+    "inverted": "inverted",
+    "extremeDutch": "steep tilt",
+    "wormsEye": "worm's-eye",
+    "birdsEye": "bird's-eye",
+    "bustShot": "bust shot",
+    "mediumShot": "medium shot",
+    "overShoulder": "over-the-shoulder"
   },
   "mutations": {
     "horizonExtreme": "extreme horizon",
@@ -481,7 +528,12 @@
     "switchPerspective": "switch perspective",
     "mirror": "mirror",
     "dynamicPose": "dynamic pose",
-    "dramaticLens": "dramatic wide-angle"
+    "dramaticLens": "dramatic wide-angle",
+    "portraitShot": "move in on figure",
+    "invertWorld": "invert world",
+    "wormsEye": "worm's-eye",
+    "birdsEye": "bird's-eye",
+    "overShoulder": "over-the-shoulder"
   },
   "library": {
     "favorite": "Favorite",
@@ -523,5 +575,16 @@
     "minimize": "Minimize",
     "showCandidates": "Show candidates",
     "candidatesShort": "{{n}} candidates"
+  },
+  "pwa": {
+    "title": "Use as an app",
+    "install": "Install to home screen",
+    "installed": "Installed (running as an app)",
+    "manual": "Install from the browser menu with “Add to Home screen” (iPhone/iPad: Share → “Add to Home Screen”).",
+    "hint": "Once installed it launches full-screen like an app and works offline after the first visit.",
+    "offlineReady": "Ready to work offline",
+    "updateTitle": "A new version is available",
+    "updateBody": "Reload to update (your work is saved).",
+    "reload": "Update"
   }
 }

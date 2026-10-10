@@ -7,6 +7,7 @@ import {
   SimpleGrid,
   Slider,
   Stack,
+  Switch,
   Text,
   Tooltip,
 } from '@mantine/core';
@@ -14,6 +15,7 @@ import { IconDice5, IconPlayerStop, IconSparkles } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { PRESET_KEYS, type PresetKey } from '@/core/evaluation/presets';
 import type { ExplorationMode } from '@/core/exploration/spec';
+import { SHOTS, type ShotChoice } from '@/core/exploration/cameraWork';
 import { randomSeed } from '@/core/random/prng';
 import { useCompositionStore } from '@/state/compositionStore';
 import { useExplorationStore } from '@/state/explorationStore';
@@ -97,6 +99,23 @@ export function ExplorePanel({ compact = false, onStarted }: Props) {
         allowDeselect={false}
         data={PRESET_KEYS.map((k) => ({ value: k, label: t(`presets.${k}`) }))}
         onChange={(v) => v && setPreset(v as PresetKey)}
+      />
+      <AdaptiveSelect
+        label={t('explore.shot')}
+        description={t('explore.shotHint')}
+        value={spec.shot}
+        allowDeselect={false}
+        data={(['auto', ...SHOTS] as ShotChoice[]).map((k) => ({ value: k, label: t(`explore.shots.${k}`) }))}
+        onChange={(v) => v && setSpec((s) => void (s.shot = v as ShotChoice))}
+      />
+      <Switch
+        label={t('explore.cameraWork')}
+        description={t('explore.cameraWorkHint')}
+        checked={spec.cameraWork}
+        onChange={(e) => {
+          const v = e.currentTarget.checked;
+          setSpec((s) => void (s.cameraWork = v));
+        }}
       />
       <Group gap="xs" grow align="flex-end">
         <AdaptiveSelect

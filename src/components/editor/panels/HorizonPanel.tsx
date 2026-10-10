@@ -24,8 +24,8 @@ export function HorizonPanel() {
       <ParamSlider
         label={t('horizon.angle')}
         value={h.angle}
-        min={-45}
-        max={45}
+        min={-180}
+        max={180}
         step={0.5}
         unit="°"
         precision={1}

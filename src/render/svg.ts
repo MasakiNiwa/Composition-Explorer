@@ -57,7 +57,7 @@ export function sceneSvgBody(scene: Scene, opts: SvgOptions = {}): string {
   out.push(`<g clip-path="url(#clip-${esc(uid)})">`);
   out.push(`<g transform="rotate(${n(roll)} ${n(center.x)} ${n(center.y)})">`);
   out.push('<g data-layer="environment">', ...scene.environment.map(primitiveToSvg), '</g>');
-  out.push(...scene.horizon.map(primitiveToSvg));
+  out.push('<g data-layer="horizon">', ...scene.horizon.map(primitiveToSvg), '</g>');
   for (const item of scene.items) {
     const attrs = opts.interactive ? ` data-id="${esc(item.id)}" style="cursor:move"` : '';
     // Invisible hit area so thin shapes (legs, fences) are easy to grab.
