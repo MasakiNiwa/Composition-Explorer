@@ -196,7 +196,8 @@
       {
         "title": "Using a phone",
         "items": [
-          "Pick a tool group in the bottom tool bar (Explore, Horizon, Perspective, Objects, Canvas, Guides, Evaluate, Conditions, Library) to open its controls. Tap it again or ∨ to close.",
+          "Pick a tool group in the bottom tool bar (Explore, Horizon, Perspective, Objects, Canvas, Guides, Evaluate, Conditions, Library) to open its controls in a bottom sheet over the canvas. The canvas keeps its size.",
+          "Swipe the sheet's handle up/down to switch between half and full height, or swipe down to close. The eye icon makes the sheet translucent so you can watch the canvas while editing.",
           "Tap an object on the canvas to open the “Selected” panel and edit its position, size and direction.",
           "The shortcuts just above the tool bar: undo, redo, add figure/scenery, delete, clear, import, export.",
           "The bottom navigation switches between Editor, Settings, Help and About."
@@ -479,6 +480,7 @@
       "evaluation": "Evaluate",
       "conditions": "Conditions",
       "library": "Library"
-    }
+    },
+    "translucent": "Translucent"
   }
 }

@@ -30,7 +30,12 @@ interface DragSession {
   pre: Composition;
   frame: Frame;
   moved: boolean;
+  /** Client → scene transform frozen at drag start. */
+  inv: DOMMatrix | undefined;
+  startClient: { x: number; y: number };
 }
+
+const DRAG_THRESHOLD_PX = 4;
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
@@ -58,11 +63,10 @@ export function CanvasView() {
   const k = fitW > 0 ? W / fitW : 1; // scene units per CSS pixel
   const handleR = 9 * k;
 
-  const toScene = useCallback((e: { clientX: number; clientY: number }): Vec2 => {
-    const svg = svgRef.current;
-    const ctm = svg?.getScreenCTM();
-    if (!svg || !ctm) return { x: 0, y: 0 };
-    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+  const toScene = useCallback((e: { clientX: number; clientY: number }, inv?: DOMMatrix): Vec2 => {
+    const m = inv ?? svgRef.current?.getScreenCTM()?.inverse();
+    if (!m) return { x: 0, y: 0 };
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m);
     return { x: p.x, y: p.y };
   }, []);
 
@@ -76,6 +80,8 @@ export function CanvasView() {
       pre: composition,
       frame: scene.frame,
       moved: false,
+      inv: svgRef.current?.getScreenCTM()?.inverse(),
+      startClient: { x: e.clientX, y: e.clientY },
     };
   };
 
@@ -105,8 +111,12 @@ export function CanvasView() {
   const onPointerMove = (e: ReactPointerEvent<SVGSVGElement>) => {
     const s = session.current;
     if (!s) return;
+    // Ignore tiny movements so a tap only selects.
+    if (!s.moved && Math.hypot(e.clientX - s.startClient.x, e.clientY - s.startClient.y) < DRAG_THRESHOLD_PX) return;
     s.moved = true;
-    const sp = toScene(e);
+    // Use the transform captured at drag start: the canvas may be resized
+    // mid-gesture (e.g. a panel opening) and must not make the object jump.
+    const sp = toScene(e, s.inv);
     const wp = screenToWorld(s.frame, sp);
     const d = s.drag;
     switch (d.kind) {

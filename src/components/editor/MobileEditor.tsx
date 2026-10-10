@@ -1,9 +1,8 @@
-import { ActionIcon, Box, Group, Paper, ScrollArea, Text, UnstyledButton } from '@mantine/core';
+import { Box, Group, Paper, ScrollArea, Text, UnstyledButton } from '@mantine/core';
 import {
   IconAdjustments,
   IconBox,
   IconChartRadar,
-  IconChevronDown,
   IconPointer,
   IconFrame,
   IconGridDots,
@@ -22,6 +21,8 @@ import { LibraryPanel } from '@/components/library/LibraryPanel';
 import { useViewStore } from '@/state/viewStore';
 import { CanvasView } from './CanvasView';
 import { MobileShortcutBar } from './EditorToolbar';
+import { BottomSheet } from './BottomSheet';
+import { BOTTOM_NAV_SPACE, HEADER_HEIGHT } from '@/components/AppLayout';
 import { CanvasPanel } from './panels/CanvasPanel';
 import { GuidesPanel } from './panels/GuidesPanel';
 import { HorizonPanel } from './panels/HorizonPanel';
@@ -104,68 +105,76 @@ function ToolButton({
 }
 
 /**
- * Phone layout: canvas on top, then (optional) tool sheet, shortcut bar and
- * tool-group bar. The page itself does not scroll.
+ * Phone layout (fixed between the header and the bottom navigation): the
+ * canvas fills the area and tool panels open as a bottom sheet over it, so
+ * the canvas never shrinks. Shortcut bar and tool-group bar sit below.
  */
 export function MobileEditor() {
   const { t } = useTranslation();
-  const selectedId = useViewStore((s) => s.selectedId);
+  const { selectedId, sheetTranslucent, setSheetTranslucent } = useViewStore();
   const [active, setActive] = useState<ToolKey | null>(null);
+  const [shown, setShown] = useState<ToolKey | null>(null); // keeps content during the close animation
   const prevSelected = useRef<string | null>(null);
 
-  // Selecting an object on the canvas opens its controls; deselecting closes them.
+  // Selecting an object opens its controls; deselecting closes them.
   useEffect(() => {
     if (selectedId && selectedId !== prevSelected.current) setActive('selected');
     if (!selectedId && prevSelected.current) setActive((a) => (a === 'selected' ? null : a));
     prevSelected.current = selectedId;
   }, [selectedId]);
+  useEffect(() => {
+    if (active) setShown(active);
+  }, [active]);
 
   const tools = selectedId ? [SELECTED_TOOL, ...TOOLS] : TOOLS;
-  const current = tools.find((x) => x.key === active);
+  const current = [SELECTED_TOOL, ...TOOLS].find((x) => x.key === shown);
 
   return (
     <Box
       style={{
-        height: 'calc(100dvh - var(--app-shell-header-offset, 56px) - var(--app-shell-footer-offset, 0px))',
+        position: 'fixed',
+        left: 0,
+        right: 0,
+        top: HEADER_HEIGHT,
+        bottom: BOTTOM_NAV_SPACE,
         display: 'flex',
         flexDirection: 'column',
       }}
     >
-      <Box p={6} style={{ flex: 1, minHeight: 120 }}>
-        <Paper withBorder bg="var(--mantine-color-default-hover)" p={6} h="100%">
-          <CanvasView />
-        </Paper>
+      <Box style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+        <Box p={6} h="100%">
+          <Paper withBorder bg="var(--mantine-color-default-hover)" p={6} h="100%">
+            <CanvasView />
+          </Paper>
+        </Box>
+        {current && (
+          <BottomSheet
+            open={active !== null}
+            onClose={() => setActive(null)}
+            title={t(current.label)}
+            icon={current.icon}
+            translucent={sheetTranslucent}
+            onToggleTranslucent={() => setSheetTranslucent(!sheetTranslucent)}
+            labels={{ close: t('mobile.close'), translucent: t('mobile.translucent') }}
+          >
+            <current.Panel />
+          </BottomSheet>
+        )}
       </Box>
 
-      {current && (
-        <Paper
-          withBorder
-          radius={0}
-          style={{ borderLeft: 0, borderRight: 0, display: 'flex', flexDirection: 'column', maxHeight: '45dvh' }}
-        >
-          <Group justify="space-between" px="sm" py={6} wrap="nowrap">
-            <Group gap={6} wrap="nowrap">
-              <current.icon size={18} />
-              <Text fw={600} size="sm">
-                {t(current.label)}
-              </Text>
-            </Group>
-            <ActionIcon variant="subtle" color="gray" aria-label={t('mobile.close')} onClick={() => setActive(null)}>
-              <IconChevronDown size={20} />
-            </ActionIcon>
-          </Group>
-          <ScrollArea.Autosize mah="calc(45dvh - 44px)" type="auto" offsetScrollbars>
-            <Box px="sm" pb="sm">
-              <current.Panel />
-            </Box>
-          </ScrollArea.Autosize>
-        </Paper>
-      )}
-
-      <Box style={{ borderTop: '1px solid var(--mantine-color-default-border)' }}>
+      <Box
+        style={{ borderTop: '1px solid var(--mantine-color-default-border)', background: 'var(--mantine-color-body)' }}
+      >
         <MobileShortcutBar />
       </Box>
-      <ScrollArea type="never" style={{ borderTop: '1px solid var(--mantine-color-default-border)' }}>
+      <ScrollArea
+        type="never"
+        style={{
+          borderTop: '1px solid var(--mantine-color-default-border)',
+          background: 'var(--mantine-color-body)',
+          flexShrink: 0,
+        }}
+      >
         <Group gap={2} wrap="nowrap" px={4} py={4}>
           {tools.map((x) => (
             <ToolButton

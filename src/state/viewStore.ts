@@ -15,6 +15,9 @@ interface ViewState {
   showAnalysis: boolean;
   preset: PresetKey;
   rightTab: RightTab;
+  /** Mobile bottom sheet shows the canvas through it. */
+  sheetTranslucent: boolean;
+  setSheetTranslucent: (v: boolean) => void;
   setRightTab: (t: RightTab) => void;
   setShowAnalysis: (v: boolean) => void;
   setPreset: (p: PresetKey) => void;
@@ -34,6 +37,8 @@ export const useViewStore = create<ViewState>()(
       showAnalysis: false,
       preset: 'balanced',
       rightTab: 'explore',
+      sheetTranslucent: false,
+      setSheetTranslucent: (sheetTranslucent) => set({ sheetTranslucent }),
       setRightTab: (rightTab) => set({ rightTab }),
       setShowAnalysis: (showAnalysis) => set({ showAnalysis }),
       setPreset: (preset) => set({ preset }),
@@ -50,6 +55,7 @@ export const useViewStore = create<ViewState>()(
         showHorizon: s.showHorizon,
         showAnalysis: s.showAnalysis,
         preset: s.preset,
+        sheetTranslucent: s.sheetTranslucent,
       }),
     },
   ),
