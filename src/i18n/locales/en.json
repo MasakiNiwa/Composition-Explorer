@@ -4,7 +4,6 @@
     "settings": "Settings",
     "help": "Help",
     "about": "About",
-    "menu": "Menu",
     "toggleTheme": "Toggle light / dark"
   },
   "common": {
@@ -187,11 +186,20 @@
       {
         "title": "Getting started",
         "items": [
-          "Use the panels on the left (below on phones) to set the canvas ratio, horizon and perspective.",
+          "Use the panels on the left (the tool bar at the bottom on phones) to set the canvas ratio, horizon and perspective.",
           "Add figures and scenery, then drag them on the canvas.",
           "Drag the square at the top-right of the selection to resize.",
           "Export as PNG / SVG / JSON. JSON files can be re-imported.",
           "Your work is saved in the browser automatically. “Clear” starts over (undo is available)."
+        ]
+      },
+      {
+        "title": "Using a phone",
+        "items": [
+          "Pick a tool group in the bottom tool bar (Explore, Horizon, Perspective, Objects, Canvas, Guides, Evaluate, Conditions, Library) to open its controls. Tap it again or ∨ to close.",
+          "Tap an object on the canvas to open the “Selected” panel and edit its position, size and direction.",
+          "The shortcuts just above the tool bar: undo, redo, add figure/scenery, delete, clear, import, export.",
+          "The bottom navigation switches between Editor, Settings, Help and About."
         ]
       },
       {
@@ -220,7 +228,7 @@
       {
         "title": "Composition evaluation (Phase 2)",
         "items": [
-          "The right panel (below the canvas on phones) shows nine mathematical metrics and a radar chart.",
+          "The Evaluation tab on the right (“Evaluate” in the phone tool bar) shows nine mathematical metrics and a radar chart.",
           "Evaluation presets change how the overall score weights the metrics (e.g. Negative space, Experimental).",
           "The Experimental preset rewards compositions that score low on classical rules.",
           "“Show visual centroid and focus” overlays the centroid (green cross) and the main focus (orange circle).",
@@ -230,7 +238,7 @@
       {
         "title": "Exploration (Phase 3)",
         "items": [
-          "“Explore” in the right panel (below the canvas on phones) generates and evaluates many variants of the current composition and presents candidates with different characters.",
+          "“Explore” in the right panel (in the phone tool bar) generates and evaluates many variants of the current composition and presents candidates with different characters.",
           "The Masterpiece ⇔ Discovery slider balances classical polish against novelty beyond the rules.",
           "Higher diversity avoids similar candidates.",
           "“Exploration conditions” sets Fixed / Range / Free per parameter, plus constraints such as minimum sky area.",
@@ -277,7 +285,6 @@
     "built": "Built",
     "license": "License",
     "repo": "GitHub repository",
-    "changelog": "Release notes",
     "philosophy": "Philosophy",
     "philosophyBody": "Theories like the golden ratio or rule of thirds are guides for evaluating a composition, not guarantees of beauty. Composition Explorer does not impose a single right answer: it respects classical theory while valuing the compositions that lie beyond it.",
     "references": "References",
@@ -458,5 +465,20 @@
     "showResults": "Show these results",
     "loadTemplate": "Load the base composition of this run",
     "candidatesSuffix": " candidates"
+  },
+  "mobile": {
+    "close": "Close",
+    "tools": {
+      "selected": "Selected",
+      "explore": "Explore",
+      "horizon": "Horizon",
+      "perspective": "Perspective",
+      "objects": "Objects",
+      "canvas": "Canvas",
+      "guides": "Guides",
+      "evaluation": "Evaluate",
+      "conditions": "Conditions",
+      "library": "Library"
+    }
   }
 }

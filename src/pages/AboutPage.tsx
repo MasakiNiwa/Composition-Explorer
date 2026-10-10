@@ -109,16 +109,6 @@ export function AboutPage() {
               </Button>
               <Button
                 component="a"
-                href={`${REPO_URL}/releases`}
-                target="_blank"
-                rel="noreferrer"
-                variant="default"
-                leftSection={<IconExternalLink size={18} />}
-              >
-                {t('about.changelog')}
-              </Button>
-              <Button
-                component="a"
                 href={PAGES_URL}
                 target="_blank"
                 rel="noreferrer"
