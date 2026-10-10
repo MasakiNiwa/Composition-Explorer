@@ -25,6 +25,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      # Prebuilt bundle for the Colab edition (colab/Composition_Explorer_Colab.ipynb).
+      - run: cd dist && zip -qr ../site.zip . && mv ../site.zip .
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

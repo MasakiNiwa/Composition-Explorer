@@ -1,4 +1,5 @@
 import {
+  Anchor,
   Badge,
   Button,
   Card,
@@ -18,6 +19,8 @@ import { notifications } from '@mantine/notifications';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { detectCapabilities, probeWebGpu } from '@/lib/capabilities';
+import { useBackendStore } from '@/compute/colab';
+import { REPO_URL } from '@/lib/links';
 import { useSettingsStore, type ColorScheme, type Language } from '@/state/settingsStore';
 import type { PaletteName } from '@/core/scene/palette';
 
@@ -25,6 +28,7 @@ export function SettingsPage() {
   const { t } = useTranslation();
   const s = useSettingsStore();
   const caps = useMemo(() => detectCapabilities(), []);
+  const colab = useBackendStore((s) => s.colab);
   const [gpu, setGpu] = useState<string | null | undefined>(undefined);
   useEffect(() => {
     void probeWebGpu().then(setGpu);
@@ -178,6 +182,36 @@ export function SettingsPage() {
                 </Table.Tr>
               </Table.Tbody>
             </Table>
+          </Stack>
+        </Card>
+
+        <Card withBorder>
+          <Title order={4} mb="sm">
+            {t('settings.backend')}
+          </Title>
+          <Stack gap="xs">
+            <Group gap="xs">
+              <Badge color={colab ? 'orange' : 'indigo'} variant="light">
+                {colab ? 'Google Colab' : t('settings.backendBrowser')}
+              </Badge>
+              {colab && <Text size="sm">GPU: {colab.gpu ?? t('settings.noGpu')}</Text>}
+            </Group>
+            <Text size="sm" c="dimmed">
+              {colab ? t('settings.colabHint') : t('settings.browserHint')}
+            </Text>
+            {!colab && (
+              <Anchor
+                size="sm"
+                href="https://colab.research.google.com/github/MasakiNiwa/Composition-Explorer/blob/main/colab/Composition_Explorer_Colab.ipynb"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t('settings.openColab')}
+              </Anchor>
+            )}
+            <Anchor size="xs" href={`${REPO_URL}/tree/main/colab`} target="_blank" rel="noreferrer">
+              colab/README.md
+            </Anchor>
           </Stack>
         </Card>
 

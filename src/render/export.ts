@@ -1,5 +1,7 @@
 import type { Composition } from '@/core/model/composition';
 import { buildScene, type SceneOptions } from '@/core/scene/buildScene';
+import { buildAiScene, type AiMapKind } from '@/core/scene/aiMaps';
+import { compositionPrompt } from '@/core/prompt/prompt';
 import { sceneToSvgDocument } from './svg';
 
 export function downloadBlob(blob: Blob, filename: string): void {
@@ -40,8 +42,10 @@ export function exportSvg(c: Composition, opts: SceneOptions, longEdge: number):
 }
 
 export async function renderPng(c: Composition, opts: SceneOptions, longEdge: number): Promise<Blob> {
-  const svg = compositionToSvg(c, opts, longEdge);
-  const { width, height } = exportSize(c, longEdge);
+  return rasterize(compositionToSvg(c, opts, longEdge), exportSize(c, longEdge));
+}
+
+async function rasterize(svg: string, { width, height }: { width: number; height: number }): Promise<Blob> {
   const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
   try {
     const img = new Image();
@@ -75,6 +79,7 @@ export function compositionToJson(c: Composition): string {
       app: 'composition-explorer',
       appVersion: __APP_VERSION__,
       exportedAt: new Date().toISOString(),
+      prompt: compositionPrompt(c),
       composition: c,
     },
     null,
@@ -84,4 +89,11 @@ export function compositionToJson(c: Composition): string {
 
 export function exportJson(c: Composition): void {
   downloadBlob(new Blob([compositionToJson(c)], { type: 'application/json' }), `${baseName(c)}.json`);
+}
+
+/** Depth / segmentation control image for ControlNet-style workflows. */
+export async function exportAiMap(c: Composition, kind: AiMapKind, longEdge: number): Promise<void> {
+  const size = exportSize(c, longEdge);
+  const svg = sceneToSvgDocument(buildAiScene(c, kind), { ...size, includeGuides: false });
+  downloadBlob(await rasterize(svg, size), `${baseName(c)}_${kind}.png`);
 }

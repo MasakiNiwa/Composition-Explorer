@@ -9,7 +9,7 @@ export function RoadmapCard() {
     { key: 'phase2', done: true },
     { key: 'phase3', done: true },
     { key: 'phase4', done: true },
-    { key: 'phase5', done: false },
+    { key: 'phase5', done: true },
   ];
   return (
     <Card withBorder padding="sm">

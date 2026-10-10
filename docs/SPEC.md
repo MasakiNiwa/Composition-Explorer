@@ -76,7 +76,7 @@ JSON に `schemaVersion` と `seed` を含める。探索は `(条件, seed, エ
 | 2 | 数学的構図評価（三分割、黄金比、対称性、視覚的重心、視線誘導、奥行き、余白、ダイナミズム、パース整合性、プリセット、可視化） | ✅ v0.2 |
 | 3 | 自動探索（Fixed/Range/Free、シード付き生成、制約、Worker 並列、多様性選択、Masterpiece⇔Discovery） | ✅ v0.3 |
 | 4 | 進化的探索（選択構図から再探索、突然変異、履歴、お気に入り、比較） | ✅ v0.4（NSGA-II は今後） |
-| 5 | AI 生成連携（深度マップ等の出力）、Colab Edition | 予定 |
+| 5 | AI 生成連携（深度マップ・セグメンテーション・構図プロンプト）、Colab Edition（同一 UI + API サーバー） | ✅ v0.5（GPU 機能は今後） |
 
 ## 4. ライセンス管理
 
@@ -129,3 +129,14 @@ JSON に `schemaVersion` と `seed` を含める。探索は `(条件, seed, エ
 - **ライブラリ**：お気に入りと探索履歴（最大 20 件）を IndexedDB（idb-keyval）に保存。
 - **比較**：評価タブで候補・お気に入りの指標をレーダーチャートに重ねて比較。
 - 今後：NSGA-II によるパレート最適な候補集合、ユーザーの選択履歴を使った重みの学習。
+
+## 8. AI 画像生成連携と Colab Edition（Phase 5）
+
+- **深度マップ**（`src/core/scene/aiMaps.ts`）：逆深度（disparity）で手前ほど白。平地では disparity が「地平線からの画面距離」に比例するため、
+  地面は線形グラデーション、各オブジェクトは接地位置の値で塗る（MiDaS 系の ControlNet と同じ向き）。
+- **セグメンテーション**：ADE20K 準拠の配色（空・地面・人物・建物・木・植物・岩・柵・山）。
+- **構図プロンプト**（`src/core/prompt/prompt.ts`）：地平線・カメラ高・ロール・パース・人物の大きさと位置などを英語のプロンプト断片に変換。JSON 出力にも含める。
+- **Colab Edition**（`colab/`）：ノートブックが GitHub Pages の `site.zip`（デプロイ時に生成）または指定ブランチのビルドを取得し、
+  `colab/server.py`（標準ライブラリのみ）で UI と `api/*` を同一オリジンで配信、`proxyPort` のリンクを表示。
+  UI は起動時に `./api/health` を確認して Colab バックエンドを検出し、ヘッダーと設定ページに表示する。
+- 今後：`api/explore` 等を追加し、`ComputeBackend` の Colab 実装から GPU 評価・画像生成を利用する。
