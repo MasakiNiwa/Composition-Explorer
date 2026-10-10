@@ -6,6 +6,7 @@ import { EditorToolbar } from '@/components/editor/EditorToolbar';
 import { ParameterPanels } from '@/components/editor/ParameterPanels';
 import { InspectorPanel } from '@/components/editor/panels/InspectorPanel';
 import { RoadmapCard } from '@/components/editor/RoadmapCard';
+import { EvaluationPanel } from '@/components/evaluation/EvaluationPanel';
 import { useCompositionStore } from '@/state/compositionStore';
 import { useViewStore } from '@/state/viewStore';
 
@@ -36,6 +37,15 @@ export function EditorPage() {
         {t('sections.inspector')}
       </Title>
       <InspectorPanel />
+    </Card>
+  );
+
+  const evaluation = (
+    <Card withBorder padding="sm">
+      <Title order={6} mb="xs">
+        {t('sections.evaluation')}
+      </Title>
+      <EvaluationPanel />
     </Card>
   );
 
@@ -73,6 +83,7 @@ export function EditorPage() {
         >
           <Stack p="sm" gap="sm">
             {inspector}
+            {evaluation}
             <RoadmapCard />
           </Stack>
         </ScrollArea>
@@ -91,6 +102,7 @@ export function EditorPage() {
       </Text>
       {selectedId && inspector}
       <ParameterPanels />
+      {evaluation}
       <RoadmapCard />
     </Stack>
   );

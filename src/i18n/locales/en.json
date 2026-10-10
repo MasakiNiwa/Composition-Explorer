@@ -21,7 +21,8 @@
     "perspective": "Perspective",
     "objects": "Figures & scenery",
     "guides": "Composition guides",
-    "inspector": "Selected object"
+    "inspector": "Selected object",
+    "evaluation": "Composition evaluation"
   },
   "toolbar": {
     "undo": "Undo",
@@ -201,13 +202,22 @@
         ]
       },
       {
+        "title": "Composition evaluation (Phase 2)",
+        "items": [
+          "The right panel (below the canvas on phones) shows nine mathematical metrics and a radar chart.",
+          "Evaluation presets change how the overall score weights the metrics (e.g. Negative space, Experimental).",
+          "The Experimental preset rewards compositions that score low on classical rules.",
+          "“Show visual centroid and focus” overlays the centroid (green cross) and the main focus (orange circle).",
+          "Metrics describe characteristics; higher is not always better."
+        ]
+      },
+      {
         "title": "Saving and reproducibility",
         "body": "JSON files include a schema version and random seed so compositions can be reproduced exactly. Exploration will be reproducible from the same conditions and seed as well."
       },
       {
         "title": "Coming next",
         "items": [
-          "Phase 2: mathematical evaluation (thirds, golden ratio, visual balance, negative space…)",
           "Phase 3: parallel exploration in Web Workers presenting 10 diverse candidates (Masterpiece ⇔ Discovery slider)",
           "Phase 4: re-exploration from a chosen composition, mutation, favorites",
           "Phase 5: richer AI-oriented exports and a Google Colab edition"
@@ -234,5 +244,82 @@
     "search": "Search packages",
     "packages": "{{count}} packages",
     "noLicenseText": "No license file is included in the package; see its repository."
+  },
+  "evaluation": {
+    "preset": "Evaluation preset",
+    "overallHint": "Weighted combination of the metrics using the selected preset.",
+    "overlay": "Show visual centroid and focus on canvas",
+    "disclaimer": "Scores are relative indicators normalized to 0–100 — they do not measure beauty."
+  },
+  "presets": {
+    "balanced": "Balanced (default)",
+    "thirds": "Rule of thirds",
+    "golden": "Golden ratio",
+    "symmetry": "Symmetry",
+    "diagonal": "Diagonal / dynamic",
+    "leadingLines": "Leading lines",
+    "negativeSpace": "Negative space",
+    "cinematic": "Cinematic",
+    "experimental": "Experimental (break the rules)"
+  },
+  "metrics": {
+    "thirds": {
+      "name": "Rule of thirds",
+      "short": "Thirds",
+      "desc": "Higher when the main subject's focus and the horizon lie near third lines / power points."
+    },
+    "golden": {
+      "name": "Golden ratio",
+      "short": "Golden",
+      "desc": "Higher when the subject and horizon lie near golden-section lines (≈38.2% / 61.8%)."
+    },
+    "symmetry": {
+      "name": "Symmetry",
+      "short": "Symmetry",
+      "desc": "Left–right symmetry of visual weight. Lowered by camera roll, raised by a centered 1-point VP."
+    },
+    "balance": {
+      "name": "Visual balance",
+      "short": "Balance",
+      "desc": "Higher when the visual centroid (size × saliency) is near the center."
+    },
+    "flow": {
+      "name": "Visual flow",
+      "short": "Flow",
+      "desc": "Perspective lines leading to the subject, diagonal placement, and looking room."
+    },
+    "depth": {
+      "name": "Depth",
+      "short": "Depth",
+      "desc": "Foreground/midground/background layering, perspective, and near–far scale contrast."
+    },
+    "negativeSpace": {
+      "name": "Negative space",
+      "short": "Space",
+      "desc": "Fraction of the frame not covered by subjects (sky, clouds and mountains count as space)."
+    },
+    "dynamics": {
+      "name": "Dynamics",
+      "short": "Dynamics",
+      "desc": "Energy from tilt, asymmetry, strong perspective and diagonal placement."
+    },
+    "perspective": {
+      "name": "Perspective consistency",
+      "short": "Consistency",
+      "desc": "Figures follow the eye-level rule and ground objects stand below the horizon."
+    }
+  },
+  "notes": {
+    "horizonThird": "The horizon sits on a third line.",
+    "horizonCenter": "The horizon is near the center — stable, but can feel static.",
+    "slightTilt": "A slight tilt tends to look like a mistake. Level it, or tilt boldly on purpose.",
+    "figureAboveHorizon": "Figure {{n}} stands above the horizon (unnatural on flat ground).",
+    "figureScale": "Figure {{n}} is {{pct}}% of its eye-level size. Use “Snap to eye level” to fix.",
+    "lookingOut": "Figure {{n}} faces out of the frame. Leave space in front of the gaze (or keep it for tension).",
+    "subjectPowerPoint": "The main subject is near a rule-of-thirds power point.",
+    "subjectCentered": "The subject is centered. Increase symmetry to make it a deliberate centered composition.",
+    "lotsOfSpace": "Lots of negative space — good for solitude or calm.",
+    "unbalanced": "Visual weight leans to one side. Add something opposite unless tension is intended.",
+    "empty": "Add objects to evaluate more metrics."
   }
 }
