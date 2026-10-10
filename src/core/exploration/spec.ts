@@ -34,7 +34,11 @@ export const FREE_BOUNDS: Record<
 
 export type PropsMode = 'fixed' | 'jitter' | 'free';
 
+/** explore = sample the parameter space; mutate = bold changes to the current composition. */
+export type ExplorationMode = 'explore' | 'mutate';
+
 export interface ExplorationSpec {
+  mode: ExplorationMode;
   params: Record<NumericParam, RangeParam>;
   perspectiveMode: 'fixed' | 'free';
   figureCount: { mode: ParamMode; min: number; max: number };
@@ -65,6 +69,7 @@ const free = (p: NumericParam): RangeParam => ({ mode: 'free', min: FREE_BOUNDS[
 
 export function defaultSpec(seed = 1): ExplorationSpec {
   return {
+    mode: 'explore',
     params: {
       horizonY: free('horizonY'),
       roll: { mode: 'range', min: -8, max: 8 },

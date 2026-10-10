@@ -1,27 +1,26 @@
 import {
   ActionIcon,
-  Badge,
   Button,
-  Card,
   Group,
   Progress,
+  SegmentedControl,
   Select,
   SimpleGrid,
   Slider,
   Stack,
   Text,
   Tooltip,
-  UnstyledButton,
 } from '@mantine/core';
 import { IconDice5, IconPlayerStop, IconSparkles } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { PRESET_KEYS, type PresetKey } from '@/core/evaluation/presets';
+import type { ExplorationMode } from '@/core/exploration/spec';
 import { randomSeed } from '@/core/random/prng';
 import { useCompositionStore } from '@/state/compositionStore';
 import { useExplorationStore } from '@/state/explorationStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { useViewStore } from '@/state/viewStore';
-import { Thumbnail } from './Thumbnail';
+import { CandidateCard } from './CandidateCard';
 
 const CANDIDATE_COUNTS = [200, 500, 1000, 2000, 5000, 10000, 20000];
 
@@ -41,6 +40,18 @@ export function ExplorePanel() {
 
   return (
     <Stack gap="sm">
+      <SegmentedControl
+        fullWidth
+        value={spec.mode}
+        onChange={(v) => setSpec((s) => void (s.mode = v as ExplorationMode))}
+        data={[
+          { value: 'explore', label: t('explore.modeExplore') },
+          { value: 'mutate', label: t('explore.modeMutate') },
+        ]}
+      />
+      <Text size="xs" c="dimmed">
+        {spec.mode === 'explore' ? t('explore.modeExploreHint') : t('explore.modeMutateHint')}
+      </Text>
       <Stack gap={2}>
         <Group justify="space-between">
           <Text size="xs" fw={600}>
@@ -131,7 +142,7 @@ export function ExplorePanel() {
           variant="gradient"
           gradient={{ from: 'indigo', to: 'grape' }}
         >
-          {t('explore.run')}
+          {spec.mode === 'mutate' ? t('explore.runMutate') : t('explore.run')}
         </Button>
       )}
       {error && (
@@ -142,56 +153,28 @@ export function ExplorePanel() {
       {result && (
         <>
           <Text size="xs" c="dimmed">
-            {t('explore.stats', {
-              n: result.generated.toLocaleString(),
-              rejected: result.rejected.toLocaleString(),
-              ms: Math.round(result.elapsedMs),
-              workers: result.workers,
-            })}
+            {result.backend === 'history'
+              ? t('explore.restored')
+              : t('explore.stats', {
+                  n: result.generated.toLocaleString(),
+                  rejected: result.rejected.toLocaleString(),
+                  ms: Math.round(result.elapsedMs),
+                  workers: result.workers,
+                })}
           </Text>
           <SimpleGrid cols={2} spacing="xs">
             {result.candidates.map((c, i) => (
-              <UnstyledButton
-                key={c.index}
-                onClick={() => {
+              <CandidateCard
+                key={`${c.index}-${i}`}
+                candidate={c}
+                rank={i + 1}
+                active={activeIndex === i}
+                onApply={() => {
                   setComposition(c.composition);
                   setActive(i);
                   select(null);
                 }}
-              >
-                <Card
-                  withBorder
-                  padding={4}
-                  style={{
-                    borderColor: activeIndex === i ? 'var(--mantine-color-indigo-6)' : undefined,
-                    borderWidth: activeIndex === i ? 2 : undefined,
-                  }}
-                >
-                  <Thumbnail composition={c.composition} uid={`cand-${c.index}`} />
-                  <Group gap={4} mt={4} justify="space-between" wrap="nowrap">
-                    <Text size="xs" fw={700}>
-                      #{i + 1}
-                    </Text>
-                    <Tooltip
-                      label={t('explore.scoreTooltip', {
-                        score: Math.round(c.score),
-                        novelty: Math.round(c.novelty * 100),
-                      })}
-                    >
-                      <Badge size="xs" variant="light">
-                        {Math.round(c.score)}
-                      </Badge>
-                    </Tooltip>
-                  </Group>
-                  <Group gap={2} mt={2}>
-                    {c.tags.slice(0, 3).map((tag) => (
-                      <Badge key={tag} size="xs" variant="outline" color="gray" style={{ textTransform: 'none' }}>
-                        {t(`tags.${tag}`)}
-                      </Badge>
-                    ))}
-                  </Group>
-                </Card>
-              </UnstyledButton>
+              />
             ))}
           </SimpleGrid>
           <Text size="xs" c="dimmed">

@@ -3,6 +3,8 @@ import { persist } from 'zustand/middleware';
 import type { GuideKind } from '@/core/scene/buildScene';
 import type { PresetKey } from '@/core/evaluation/presets';
 
+export type RightTab = 'explore' | 'evaluation' | 'library';
+
 /** Editor view state (not part of the composition itself). */
 interface ViewState {
   selectedId: string | null;
@@ -12,6 +14,8 @@ interface ViewState {
   /** Overlay the evaluation analysis (centroid, focus) on the canvas. */
   showAnalysis: boolean;
   preset: PresetKey;
+  rightTab: RightTab;
+  setRightTab: (t: RightTab) => void;
   setShowAnalysis: (v: boolean) => void;
   setPreset: (p: PresetKey) => void;
   select: (id: string | null) => void;
@@ -29,6 +33,8 @@ export const useViewStore = create<ViewState>()(
       showHorizon: true,
       showAnalysis: false,
       preset: 'balanced',
+      rightTab: 'explore',
+      setRightTab: (rightTab) => set({ rightTab }),
       setShowAnalysis: (showAnalysis) => set({ showAnalysis }),
       setPreset: (preset) => set({ preset }),
       select: (selectedId) => set({ selectedId }),

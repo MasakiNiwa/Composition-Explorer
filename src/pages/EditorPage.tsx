@@ -1,5 +1,5 @@
 import { Box, Card, Paper, ScrollArea, Stack, Tabs, Text, Title } from '@mantine/core';
-import { IconChartRadar, IconSparkles } from '@tabler/icons-react';
+import { useEffect } from 'react';
 import { useHotkeys, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { CanvasView } from '@/components/editor/CanvasView';
@@ -9,8 +9,10 @@ import { InspectorPanel } from '@/components/editor/panels/InspectorPanel';
 import { RoadmapCard } from '@/components/editor/RoadmapCard';
 import { EvaluationPanel } from '@/components/evaluation/EvaluationPanel';
 import { ExplorePanel } from '@/components/exploration/ExplorePanel';
+import { LibraryPanel } from '@/components/library/LibraryPanel';
+import { useLibraryStore } from '@/state/libraryStore';
 import { useCompositionStore } from '@/state/compositionStore';
-import { useViewStore } from '@/state/viewStore';
+import { useViewStore, type RightTab } from '@/state/viewStore';
 
 function useEditorHotkeys() {
   const { removeItem, duplicateItem } = useCompositionStore();
@@ -30,7 +32,11 @@ function useEditorHotkeys() {
 export function EditorPage() {
   const { t } = useTranslation();
   const desktop = useMediaQuery('(min-width: 62em)', true);
-  const selectedId = useViewStore((s) => s.selectedId);
+  const { selectedId, rightTab, setRightTab } = useViewStore();
+  const hydrate = useLibraryStore((s) => s.hydrate);
+  useEffect(() => {
+    void hydrate();
+  }, [hydrate]);
   useEditorHotkeys();
 
   const inspector = (
@@ -44,20 +50,20 @@ export function EditorPage() {
 
   const analysis = (
     <Card withBorder padding="sm">
-      <Tabs defaultValue="explore" keepMounted={false}>
+      <Tabs value={rightTab} onChange={(v) => v && setRightTab(v as RightTab)} keepMounted={false}>
         <Tabs.List grow mb="sm">
-          <Tabs.Tab value="explore" leftSection={<IconSparkles size={16} />}>
-            {t('sections.explore')}
-          </Tabs.Tab>
-          <Tabs.Tab value="evaluation" leftSection={<IconChartRadar size={16} />}>
-            {t('sections.evaluation')}
-          </Tabs.Tab>
+          <Tabs.Tab value="explore">{t('sections.explore')}</Tabs.Tab>
+          <Tabs.Tab value="evaluation">{t('sections.evaluation')}</Tabs.Tab>
+          <Tabs.Tab value="library">{t('sections.library')}</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="explore">
           <ExplorePanel />
         </Tabs.Panel>
         <Tabs.Panel value="evaluation">
           <EvaluationPanel />
+        </Tabs.Panel>
+        <Tabs.Panel value="library">
+          <LibraryPanel />
         </Tabs.Panel>
       </Tabs>
     </Card>

@@ -1,6 +1,10 @@
 import { Alert, Group, Progress, RingProgress, Select, Stack, Switch, Text, Tooltip } from '@mantine/core';
 import { IconAlertTriangle, IconCircleCheck, IconInfoCircle } from '@tabler/icons-react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { computeMetrics } from '@/core/evaluation/evaluate';
+import { useExplorationStore } from '@/state/explorationStore';
+import { useLibraryStore } from '@/state/libraryStore';
 import { METRIC_KEYS } from '@/core/evaluation/metrics';
 import { PRESET_KEYS, type PresetKey } from '@/core/evaluation/presets';
 import { useEvaluation } from '@/state/useEvaluation';
@@ -13,6 +17,28 @@ export function EvaluationPanel() {
   const { t } = useTranslation();
   const ev = useEvaluation();
   const { preset, setPreset, showAnalysis, setShowAnalysis } = useViewStore();
+  const result = useExplorationStore((s) => s.result);
+  const favorites = useLibraryStore((s) => s.favorites);
+  const [compareKey, setCompareKey] = useState<string | null>(null);
+  const compareOptions = useMemo(
+    () => [
+      ...(result?.candidates ?? []).map((c, i) => ({
+        value: `c${i}`,
+        label: `${t('evaluation.candidate')} #${i + 1}`,
+        comp: c.composition,
+      })),
+      ...favorites.map((f, i) => ({
+        value: `f${f.id}`,
+        label: `★ ${f.name || `${t('library.untitled')} ${i + 1}`}`,
+        comp: f.composition,
+      })),
+    ],
+    [result, favorites, t],
+  );
+  const compare = useMemo(() => {
+    const opt = compareOptions.find((o) => o.value === compareKey);
+    return opt ? computeMetrics(opt.comp) : null;
+  }, [compareOptions, compareKey]);
 
   return (
     <Stack gap="sm">
@@ -41,7 +67,18 @@ export function EvaluationPanel() {
       </Group>
       <RadarChart
         values={METRIC_KEYS.map((k) => ev.metrics[k])}
+        compare={compare ? METRIC_KEYS.map((k) => compare[k]) : undefined}
         labels={METRIC_KEYS.map((k) => t(`metrics.${k}.short`))}
+      />
+      <Select
+        size="xs"
+        label={t('evaluation.compare')}
+        placeholder={t('evaluation.comparePlaceholder')}
+        clearable
+        value={compareKey}
+        data={compareOptions.map(({ value, label }) => ({ value, label }))}
+        onChange={setCompareKey}
+        disabled={compareOptions.length === 0}
       />
       <Stack gap={6}>
         {METRIC_KEYS.map((k) => (
@@ -51,6 +88,11 @@ export function EvaluationPanel() {
                 <Text size="xs">{t(`metrics.${k}.name`)}</Text>
                 <Text size="xs" fw={600}>
                   {Math.round(ev.metrics[k])}
+                  {compare && (
+                    <Text span size="xs" c="orange" ml={6}>
+                      {Math.round(compare[k])}
+                    </Text>
+                  )}
                 </Text>
               </Group>
               <Progress value={ev.metrics[k]} color={scoreColor(ev.metrics[k])} size="sm" />

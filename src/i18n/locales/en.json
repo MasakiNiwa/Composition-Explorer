@@ -24,7 +24,8 @@
     "inspector": "Selected object",
     "evaluation": "Composition evaluation",
     "explore": "Explore",
-    "conditions": "Exploration conditions"
+    "conditions": "Exploration conditions",
+    "library": "Library"
   },
   "toolbar": {
     "undo": "Undo",
@@ -225,13 +226,22 @@
         ]
       },
       {
+        "title": "Mutation & library (Phase 4)",
+        "items": [
+          "Mutate mode keeps part of the current composition's character while applying bold changes: extreme horizon, far/near figures, flipped vanishing point, strong tilt, and more.",
+          "Load a candidate you like, then explore again — the search continues from it (evolutionary exploration).",
+          "Star candidates to save them as favorites; load them anytime from the Library tab (stored in this browser's IndexedDB).",
+          "Exploration history lets you bring back previous results.",
+          "Use “Compare” in the Evaluation tab to overlay a candidate or favorite on the radar chart."
+        ]
+      },
+      {
         "title": "Saving and reproducibility",
         "body": "JSON files include a schema version and random seed so compositions can be reproduced exactly. Exploration will be reproducible from the same conditions and seed as well."
       },
       {
         "title": "Coming next",
         "items": [
-          "Phase 4: re-exploration from a chosen composition, mutation, favorites",
           "Phase 5: richer AI-oriented exports and a Google Colab edition"
         ]
       }
@@ -261,7 +271,10 @@
     "preset": "Evaluation preset",
     "overallHint": "Weighted combination of the metrics using the selected preset.",
     "overlay": "Show visual centroid and focus on canvas",
-    "disclaimer": "Scores are relative indicators normalized to 0–100 — they do not measure beauty."
+    "disclaimer": "Scores are relative indicators normalized to 0–100 — they do not measure beauty.",
+    "compare": "Compare (orange)",
+    "comparePlaceholder": "Compare with a candidate or favorite",
+    "candidate": "Candidate"
   },
   "presets": {
     "balanced": "Balanced (default)",
@@ -376,7 +389,13 @@
     "cancel": "Cancel",
     "stats": "Evaluated {{n}} (rejected {{rejected}}) · {{ms}} ms · {{workers}} workers",
     "scoreTooltip": "Preset score {{score}} / novelty {{novelty}}",
-    "applyHint": "Tap a candidate to load it on the canvas (Undo restores). Exploring again starts from the loaded composition."
+    "applyHint": "Tap a candidate to load it on the canvas (Undo restores). Exploring again starts from the loaded composition.",
+    "modeExplore": "Explore",
+    "modeMutate": "Mutate",
+    "modeExploreHint": "Generates candidates broadly from the parameter space following the conditions.",
+    "modeMutateHint": "Keeps part of the current composition's character while applying bold changes (extreme horizon, tiny figures, flipped vanishing point…).",
+    "runMutate": "Mutate",
+    "restored": "Results restored from history."
   },
   "tags": {
     "highHorizon": "high horizon",
@@ -392,5 +411,30 @@
     "closeUp": "close-up",
     "dynamic": "dynamic",
     "group": "group"
+  },
+  "mutations": {
+    "horizonExtreme": "extreme horizon",
+    "shrinkFigures": "figures far away",
+    "enlargeFigure": "figure up close",
+    "flipVanishingPoint": "flip VP",
+    "breakSymmetry": "break symmetry",
+    "moreSpace": "more space",
+    "dutchAngle": "strong tilt",
+    "switchPerspective": "switch perspective",
+    "mirror": "mirror"
+  },
+  "library": {
+    "favorite": "Favorite",
+    "addCurrent": "Add current composition to favorites",
+    "added": "Added to favorites",
+    "favorites": "Favorites",
+    "noFavorites": "Use ☆ on a candidate or the button above.",
+    "untitled": "Untitled",
+    "history": "Exploration history",
+    "noHistory": "Explorations are kept here (up to 20).",
+    "clearHistory": "Clear history",
+    "showResults": "Show these results",
+    "loadTemplate": "Load the base composition of this run",
+    "candidatesSuffix": " candidates"
   }
 }
