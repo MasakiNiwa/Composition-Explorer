@@ -1,7 +1,7 @@
 {
   "name": "composition-explorer",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Discover unseen compositions with math and art theory.",
   "license": "MIT",
   "type": "module",

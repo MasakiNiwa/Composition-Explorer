@@ -8,6 +8,7 @@ import { sceneSvgBody } from '@/render/svg';
 import { useCompositionStore } from '@/state/compositionStore';
 import { useSettingsStore } from '@/state/settingsStore';
 import { useViewStore } from '@/state/viewStore';
+import { useEvaluation } from '@/state/useEvaluation';
 import type { Composition } from '@/core/model/composition';
 
 type Drag =
@@ -36,7 +37,8 @@ const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 export function CanvasView() {
   const composition = useCompositionStore((s) => s.composition);
   const update = useCompositionStore((s) => s.update);
-  const { selectedId, select, guides, showGrid, showHorizon } = useViewStore();
+  const { selectedId, select, guides, showGrid, showHorizon, showAnalysis } = useViewStore();
+  const evaluation = useEvaluation();
   const palette = useSettingsStore((s) => s.palette);
   const { ref: wrapRef, width: boxW, height: boxH } = useElementSize();
   const svgRef = useRef<SVGSVGElement>(null);
@@ -337,8 +339,48 @@ export function CanvasView() {
               );
             })}
           </g>
+          {showAnalysis && <AnalysisOverlay W={W} H={H} k={k} evaluation={evaluation} />}
         </svg>
       )}
     </Box>
+  );
+}
+
+/** Screen-space overlay: visual-weight centroid and primary point of interest. */
+function AnalysisOverlay({
+  W,
+  H,
+  k,
+  evaluation,
+}: {
+  W: number;
+  H: number;
+  k: number;
+  evaluation: ReturnType<typeof useEvaluation>;
+}) {
+  const { centroid, primary } = evaluation.features;
+  const r = 10 * k;
+  return (
+    <g pointerEvents="none">
+      <rect x={W * 0.5 - 2 * k} y={0} width={4 * k} height={H} fill="#12b886" opacity={0.25} />
+      {primary && (
+        <circle
+          cx={primary.focus.x * W}
+          cy={primary.focus.y * H}
+          r={r * 1.6}
+          fill="none"
+          stroke="#f76707"
+          strokeWidth={3 * k}
+          strokeDasharray={`${5 * k} ${3 * k}`}
+        />
+      )}
+      {centroid && (
+        <g transform={`translate(${centroid.x * W} ${centroid.y * H})`}>
+          <circle r={r} fill="#12b886" fillOpacity={0.35} stroke="#0ca678" strokeWidth={2 * k} />
+          <line x1={-r * 1.6} x2={r * 1.6} y1={0} y2={0} stroke="#0ca678" strokeWidth={2 * k} />
+          <line y1={-r * 1.6} y2={r * 1.6} x1={0} x2={0} stroke="#0ca678" strokeWidth={2 * k} />
+        </g>
+      )}
+    </g>
   );
 }

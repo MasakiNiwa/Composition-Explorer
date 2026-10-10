@@ -6,7 +6,7 @@ export function RoadmapCard() {
   const { t } = useTranslation();
   const phases = [
     { key: 'phase1', done: true },
-    { key: 'phase2', done: false },
+    { key: 'phase2', done: true },
     { key: 'phase3', done: false },
     { key: 'phase4', done: false },
     { key: 'phase5', done: false },
