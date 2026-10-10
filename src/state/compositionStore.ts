@@ -57,6 +57,8 @@ export const useCompositionStore = create<CompositionState>()(
               y,
               height: Math.min(1.2, h),
               facing: 0,
+              tilt: 0,
+              roll: 0,
               pose: 'standing',
               locked: false,
             });
@@ -82,6 +84,7 @@ export const useCompositionStore = create<CompositionState>()(
               width: d.width,
               height: d.height,
               flip: false,
+              rotation: 0,
               locked: false,
             });
           });

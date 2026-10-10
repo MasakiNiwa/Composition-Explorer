@@ -19,7 +19,7 @@ export const SCHEMA_VERSION = 1;
 export const PERSPECTIVE_MODES = ['none', 'one', 'two'] as const;
 export type PerspectiveMode = (typeof PERSPECTIVE_MODES)[number];
 
-export const POSES = ['standing', 'walking', 'sitting'] as const;
+export const POSES = ['standing', 'walking', 'running', 'jumping', 'sitting', 'reaching'] as const;
 export type Pose = (typeof POSES)[number];
 
 export const LAYERS = ['background', 'midground', 'foreground'] as const;
@@ -39,7 +39,12 @@ export const figureSchema = z.object({
   /** Body height as a fraction of canvas height. */
   height: z.number().min(0.005).max(3),
   /** Facing direction in degrees. 0 = toward viewer, 90 = right, -90 = left, 180 = away. */
+  /** Rotation around the vertical axis (yaw). 0 = toward viewer, 90 = right. */
   facing: z.number().min(-180).max(180),
+  /** Rotation around the left–right axis (pitch). + = top leans toward the viewer. */
+  tilt: z.number().min(-180).max(180).default(0),
+  /** Rotation around the viewing axis (roll), clockwise on screen. */
+  roll: z.number().min(-180).max(180).default(0),
   pose: z.enum(POSES),
   locked: z.boolean().default(false),
 });
@@ -56,6 +61,8 @@ export const propSchema = z.object({
   width: z.number().min(0.005).max(4),
   height: z.number().min(0.005).max(4),
   flip: z.boolean().default(false),
+  /** In-plane rotation in degrees (clockwise) around the object's center. */
+  rotation: z.number().min(-180).max(180).default(0),
   locked: z.boolean().default(false),
 });
 export type Prop = z.infer<typeof propSchema>;
@@ -75,6 +82,8 @@ export const compositionSchema = z.object({
     angle: z.number().min(-45).max(45),
     /** Camera (eye) height in meters, used by the eye-level rule for figures. */
     cameraHeight: z.number().min(0.1).max(1000),
+    /** Vertical field of view (lens). Wide angles exaggerate figure foreshortening. */
+    fov: z.number().min(10).max(150).default(50),
   }),
   perspective: z.object({
     mode: z.enum(PERSPECTIVE_MODES),
@@ -122,7 +131,7 @@ export function createEmptyComposition(seed = 1): Composition {
     name: '',
     seed,
     canvas: { aspectW: 2, aspectH: 3 },
-    horizon: { y: 0.62, angle: 0, cameraHeight: 1.6 },
+    horizon: { y: 0.62, angle: 0, cameraHeight: 1.6, fov: 50 },
     perspective: {
       mode: 'none',
       vp: 0.5,
@@ -149,6 +158,8 @@ export function createSampleComposition(): Composition {
       y: 0.86,
       height: 0.32,
       facing: 30,
+      tilt: 0,
+      roll: 0,
       pose: 'standing',
       locked: false,
     },
@@ -163,6 +174,7 @@ export function createSampleComposition(): Composition {
       width: 0.9,
       height: 0.22,
       flip: false,
+      rotation: 0,
       locked: false,
     },
     {
@@ -174,6 +186,7 @@ export function createSampleComposition(): Composition {
       width: 0.35,
       height: 0.08,
       flip: false,
+      rotation: 0,
       locked: false,
     },
     {
@@ -185,6 +198,7 @@ export function createSampleComposition(): Composition {
       width: 0.12,
       height: 0.22,
       flip: false,
+      rotation: 0,
       locked: false,
     },
     {
@@ -196,6 +210,7 @@ export function createSampleComposition(): Composition {
       width: 0.22,
       height: 0.55,
       flip: false,
+      rotation: 0,
       locked: false,
     },
   ];

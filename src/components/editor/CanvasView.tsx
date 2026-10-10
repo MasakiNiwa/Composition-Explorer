@@ -23,7 +23,8 @@ type Drag =
     }
   | { kind: 'horizon'; start: Vec2; orig: number }
   | { kind: 'roll'; startAngle: number; orig: number }
-  | { kind: 'vp'; key: 'vp' | 'vpLeft' | 'vpRight'; start: Vec2; orig: number };
+  | { kind: 'vp'; key: 'vp' | 'vpLeft' | 'vpRight'; start: Vec2; orig: number }
+  | { kind: 'rotate'; id: string; center: Vec2; startAngle: number; orig: number; isFigure: boolean };
 
 interface DragSession {
   drag: Drag;
@@ -167,6 +168,24 @@ export function CanvasView() {
         update((c) => void (c.perspective[d.key] = clamp(d.orig + dx, -5, 6)));
         break;
       }
+      case 'rotate': {
+        const a = (Math.atan2(wp.y - d.center.y, wp.x - d.center.x) * 180) / Math.PI;
+        let next = d.orig + (a - d.startAngle);
+        next = ((((next + 180) % 360) + 360) % 360) - 180;
+        // Snap to 15° steps when close, for clean angles.
+        const snapped = Math.round(next / 15) * 15;
+        if (Math.abs(snapped - next) < 3) next = snapped;
+        update((c) => {
+          if (d.isFigure) {
+            const it = c.figures.find((x) => x.id === d.id);
+            if (it) it.roll = Math.round(next);
+          } else {
+            const it = c.props.find((x) => x.id === d.id);
+            if (it) it.rotation = Math.round(next);
+          }
+        });
+        break;
+      }
     }
   };
 
@@ -194,6 +213,24 @@ export function CanvasView() {
     composition.perspective.mode === 'one' ? ['vp'] : ['vpLeft', 'vpRight'];
   const hxL = W * 0.04;
   const hxR = W * 0.96;
+
+  const startRotate = (e: ReactPointerEvent) => {
+    if (!selected) return;
+    const fig = composition.figures.find((f) => f.id === selected.id);
+    const prop = composition.props.find((p) => p.id === selected.id);
+    const it = fig ?? prop;
+    if (!it || it.locked) return;
+    const center = { x: selected.bounds.x + selected.bounds.w / 2, y: selected.bounds.y + selected.bounds.h / 2 };
+    const wp = screenToWorld(scene.frame, toScene(e));
+    begin(e, {
+      kind: 'rotate',
+      id: selected.id,
+      center,
+      startAngle: (Math.atan2(wp.y - center.y, wp.x - center.x) * 180) / Math.PI,
+      orig: fig ? fig.roll : (prop?.rotation ?? 0),
+      isFigure: !!fig,
+    });
+  };
 
   const startResize = (e: ReactPointerEvent) => {
     if (!selected) return;
@@ -273,6 +310,30 @@ export function CanvasView() {
                   style={{ cursor: 'nesw-resize' }}
                   onPointerDown={startResize}
                 />
+                <line
+                  x1={selected.bounds.x + selected.bounds.w / 2}
+                  y1={selected.bounds.y}
+                  x2={selected.bounds.x + selected.bounds.w / 2}
+                  y2={selected.bounds.y - handleR * 3}
+                  stroke="#4c6ef5"
+                  strokeWidth={1.5 * k}
+                  pointerEvents="none"
+                />
+                <g style={{ cursor: 'grab' }} onPointerDown={startRotate}>
+                  <circle
+                    cx={selected.bounds.x + selected.bounds.w / 2}
+                    cy={selected.bounds.y - handleR * 3}
+                    r={handleR * 1.15}
+                    {...handleStyle}
+                  />
+                  <path
+                    d={`M ${selected.bounds.x + selected.bounds.w / 2 - handleR * 0.55} ${selected.bounds.y - handleR * 3} a ${handleR * 0.55} ${handleR * 0.55} 0 1 1 ${handleR * 0.55} ${handleR * 0.55}`}
+                    fill="none"
+                    stroke="#4c6ef5"
+                    strokeWidth={1.6 * k}
+                    pointerEvents="none"
+                  />
+                </g>
               </>
             )}
             {showHorizon && (

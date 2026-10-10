@@ -25,6 +25,8 @@ export function compositionPrompt(c: Composition): string {
   else if (c.horizon.cameraHeight < 0.8) parts.push('low angle shot', 'camera near the ground');
   else parts.push('eye-level shot');
   if (Math.abs(c.horizon.angle) >= 6) parts.push('dutch angle', 'tilted horizon');
+  if (c.horizon.fov >= 80) parts.push('wide-angle lens', 'exaggerated perspective');
+  else if (c.horizon.fov <= 25) parts.push('telephoto lens', 'compressed perspective');
 
   if (c.perspective.mode === 'one') parts.push('one-point perspective', `vanishing point ${third(c.perspective.vp)}`);
   if (c.perspective.mode === 'two') {
@@ -45,7 +47,11 @@ export function compositionPrompt(c: Composition): string {
             : 'close-up of a person';
     parts.push(`${size} in the ${vertical(s.focus.y)} ${third(s.focus.x)} of the frame`);
     const dir = Math.sin((c.figures.find((x) => x.id === s.id)?.facing ?? 0) * (Math.PI / 180));
+    const fig = c.figures.find((x) => x.id === s.id);
     if (Math.abs(dir) > 0.5) parts.push(`facing ${dir > 0 ? 'right' : 'left'}`);
+    if (fig && fig.pose !== 'standing') parts.push(`${fig.pose} pose`);
+    if (fig && (Math.abs(fig.tilt) >= 20 || Math.abs(fig.roll) >= 15))
+      parts.push('dynamic pose', 'dramatic foreshortening');
   } else if (figs.length > 1) parts.push(`${figs.length} people`);
 
   const kinds = new Set(c.props.map((p) => p.kind));

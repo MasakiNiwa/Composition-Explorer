@@ -76,10 +76,16 @@ export class LocalWorkerBackend implements ComputeBackend {
       });
     }
 
-    const pool: Candidate[] = mergePools(
+    let pool: Candidate[] = mergePools(
       results.map((r) => r.pool),
       k,
     );
+    // Nothing satisfies the constraints: show the closest candidates instead.
+    if (pool.length === 0)
+      pool = mergePools(
+        results.map((r) => r.fallback),
+        k,
+      );
     return {
       candidates: selectDiverse(pool, spec.present, spec.diversity),
       generated: spec.candidates,

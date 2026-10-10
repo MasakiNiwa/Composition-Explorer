@@ -6,6 +6,7 @@
 import { eyeLevelFigureHeight, frameOf, worldToScreen, type Frame } from '../geometry/camera';
 import type { Vec2 } from '../geometry/vec';
 import type { Composition, Layer, PropKind } from '../model/composition';
+import { HEAD_RADIUS, projectFigure } from '../scene/figure3d';
 
 export interface Box {
   x0: number;
@@ -52,7 +53,8 @@ export interface Features {
   /** Coarse occupancy grid of visual weight (GRID × GRID), row-major. */
   weightGrid: Float32Array;
   /** Figures with their eye-level consistency information. */
-  figures: { subject: Subject; facing: number; ideal: number | null }[];
+  /** Figures with eye-level information; `upright` ones are judged by the eye-level rule. */
+  figures: { subject: Subject; facing: number; ideal: number | null; upright: boolean }[];
 }
 
 export const GRID = 24;
@@ -106,10 +108,19 @@ export function extractFeatures(c: Composition): Features {
   const figures: Features['figures'] = [];
 
   for (const fig of c.figures) {
-    const h = fig.height * H;
-    const x = fig.x * W;
-    const y = fig.y * H;
-    const raw = screenBox(f, x - h * 0.2, y - h, x + h * 0.2, y);
+    const pf = projectFigure(fig, f, c.horizon.fov ?? 50);
+    let jx0 = Infinity;
+    let jy0 = Infinity;
+    let jx1 = -Infinity;
+    let jy1 = -Infinity;
+    for (const j of Object.values(pf.joints)) {
+      jx0 = Math.min(jx0, j.x);
+      jy0 = Math.min(jy0, j.y);
+      jx1 = Math.max(jx1, j.x);
+      jy1 = Math.max(jy1, j.y);
+    }
+    const pad = HEAD_RADIUS * pf.scaleAt('head');
+    const raw = screenBox(f, jx0 - pad, jy0 - pad, jx1 + pad, jy1 + pad);
     const box = clipBox(raw);
     // Silhouette fills roughly 45% of its bounding box.
     const area = box ? (box.x1 - box.x0) * (box.y1 - box.y0) * 0.45 : 0;
@@ -120,12 +131,17 @@ export function extractFeatures(c: Composition): Features {
       box,
       area,
       weight: area * SALIENCY.figure,
-      focus: toScreenNorm(f, { x, y: y - h * 0.88 }),
+      focus: toScreenNorm(f, { x: pf.joints.head.x, y: pf.joints.head.y }),
       height: fig.height,
       solid: true,
     };
     subjects.push(s);
-    figures.push({ subject: s, facing: fig.facing, ideal: eyeLevelFigureHeight(c, fig.y) });
+    figures.push({
+      subject: s,
+      facing: fig.facing,
+      ideal: eyeLevelFigureHeight(c, fig.y),
+      upright: Math.abs(fig.tilt ?? 0) < 25 && Math.abs(fig.roll ?? 0) < 25,
+    });
   }
 
   for (const p of c.props) {

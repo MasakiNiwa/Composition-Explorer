@@ -84,7 +84,7 @@ export function buildScene(c: Composition, opts: SceneOptions = {}): Scene {
     ...c.figures.map((fig) => ({
       rank: 1,
       y: fig.y,
-      item: () => figureItem(fig, f, pal),
+      item: () => figureItem(fig, f, pal, c.horizon.fov),
     })),
   ];
   entries.sort((a, b) => a.rank - b.rank || a.y - b.y);

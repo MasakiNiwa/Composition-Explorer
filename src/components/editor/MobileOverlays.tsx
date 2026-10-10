@@ -5,6 +5,8 @@
 import { ActionIcon, Badge, Box, Group, Loader, RingProgress, ScrollArea, Text, UnstyledButton } from '@mantine/core';
 import {
   IconAdjustmentsHorizontal,
+  IconChevronDown,
+  IconChevronUp,
   IconPlayerStopFilled,
   IconSparkles,
   IconStar,
@@ -110,7 +112,15 @@ export function ExploreFab({ onOpenSettings }: { onOpenSettings: () => void }) {
 }
 
 /** Horizontal filmstrip of candidates; tap to load onto the canvas. */
-export function CandidateStrip({ onClose }: { onClose: () => void }) {
+export function CandidateStrip({
+  onClose,
+  collapsed,
+  onToggle,
+}: {
+  onClose: () => void;
+  collapsed: boolean;
+  onToggle: () => void;
+}) {
   const { t } = useTranslation();
   const { result, activeIndex, setActive } = useExplorationStore();
   const setComposition = useCompositionStore((s) => s.setComposition);
@@ -119,15 +129,36 @@ export function CandidateStrip({ onClose }: { onClose: () => void }) {
   const { addFavorite, removeFavorite } = useLibraryStore();
   if (!result || result.candidates.length === 0) return null;
 
+  if (collapsed)
+    return (
+      <UnstyledButton
+        onClick={onToggle}
+        aria-label={t('mobile.showCandidates')}
+        style={{ ...glass, borderRadius: 999, padding: '6px 12px', alignSelf: 'flex-start' }}
+      >
+        <Group gap={6} wrap="nowrap">
+          <IconChevronUp size={16} />
+          <Text size="xs" fw={600}>
+            {t('mobile.candidatesShort', { n: result.candidates.length })}
+          </Text>
+        </Group>
+      </UnstyledButton>
+    );
+
   return (
     <Box style={{ ...glass, borderRadius: 14, padding: 6 }}>
       <Group justify="space-between" px={4} mb={4} wrap="nowrap">
         <Text size="xs" fw={600}>
           {t('mobile.candidates', { n: result.candidates.length })}
         </Text>
-        <ActionIcon size="sm" variant="subtle" color="gray" aria-label={t('mobile.close')} onClick={onClose}>
-          <IconX size={16} />
-        </ActionIcon>
+        <Group gap={2} wrap="nowrap">
+          <ActionIcon size="sm" variant="subtle" color="gray" aria-label={t('mobile.minimize')} onClick={onToggle}>
+            <IconChevronDown size={16} />
+          </ActionIcon>
+          <ActionIcon size="sm" variant="subtle" color="gray" aria-label={t('mobile.close')} onClick={onClose}>
+            <IconX size={16} />
+          </ActionIcon>
+        </Group>
       </Group>
       <ScrollArea type="never">
         <Group gap={6} wrap="nowrap">

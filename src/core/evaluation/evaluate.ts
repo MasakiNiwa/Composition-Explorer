@@ -63,6 +63,7 @@ function buildNotes(c: Composition, f: Features, m: M.Metrics): Note[] {
   }
   if (Math.abs(c.horizon.angle) > 0.3 && Math.abs(c.horizon.angle) < 3) notes.push({ key: 'slightTilt', tone: 'warn' });
   for (const [i, fig] of f.figures.entries()) {
+    if (!fig.upright) continue;
     if (fig.ideal == null) notes.push({ key: 'figureAboveHorizon', params: { n: i + 1 }, tone: 'warn' });
     else {
       const r = fig.subject.height / fig.ideal;

@@ -159,6 +159,7 @@ export function dynamics(f: Features, sym: number): number {
 export function perspective(f: Features, groundBases: { y: number; layer: string }[]): number {
   const scores: number[] = [];
   for (const fig of f.figures) {
+    if (!fig.upright) continue; // tumbling/flying figures are free of the eye-level rule
     if (fig.ideal == null) {
       scores.push(0);
       continue;

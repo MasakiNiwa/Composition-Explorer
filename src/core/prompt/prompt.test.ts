@@ -19,11 +19,12 @@ describe('AI outputs', () => {
     const c = createSampleComposition();
     c.props = [];
     c.figures = [
-      { id: 'near', x: 0.3, y: 0.95, height: 0.3, facing: 0, pose: 'standing', locked: false },
-      { id: 'far', x: 0.7, y: 0.65, height: 0.05, facing: 0, pose: 'standing', locked: false },
+      { id: 'near', x: 0.3, y: 0.95, height: 0.3, facing: 0, tilt: 0, roll: 0, pose: 'standing', locked: false },
+      { id: 'far', x: 0.7, y: 0.65, height: 0.05, facing: 0, tilt: 0, roll: 0, pose: 'standing', locked: false },
     ];
     const s = buildAiScene(c, 'depth');
-    const v = (id: string) => parseInt(s.items.find((i) => i.id === id)!.prims[0].fill!.slice(1, 3), 16);
+    const v = (id: string) =>
+      parseInt(((p) => (p.fill ?? p.stroke)!)(s.items.find((i) => i.id === id)!.prims[0]).slice(1, 3), 16);
     expect(v('near')).toBeGreaterThan(v('far'));
   });
 

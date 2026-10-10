@@ -17,6 +17,8 @@ export const MUTATIONS = [
   'dutchAngle',
   'switchPerspective',
   'mirror',
+  'dynamicPose',
+  'dramaticLens',
 ] as const;
 export type Mutation = (typeof MUTATIONS)[number];
 
@@ -111,6 +113,28 @@ export function applyMutation(c: Composition, m: Mutation, rng: Rng): void {
         c.perspective.vpRight = center + span / 2;
       } else c.perspective.vp = rng.range(0.1, 0.9);
       break;
+    case 'dynamicPose':
+      for (const f of c.figures) {
+        if (f.locked) continue;
+        f.pose = rng.pick(['running', 'jumping', 'reaching', 'walking'] as const);
+        f.tilt = Math.round(rng.range(-60, 60));
+        f.roll = Math.round((rng.chance(0.5) ? 1 : -1) * rng.range(10, 45));
+        f.facing = Math.round(rng.range(-150, 150));
+      }
+      break;
+    case 'dramaticLens': {
+      // Wide-angle lens and a figure close to the camera, leaning toward it.
+      c.horizon.fov = Math.round(rng.range(85, 120));
+      const f = c.figures.filter((x) => !x.locked)[0];
+      if (f) {
+        f.y = rng.range(0.85, 1.15);
+        f.x = rng.range(0.25, 0.75);
+        resizeFiguresToEyeLevel(c);
+        f.tilt = Math.round((rng.chance(0.7) ? 1 : -1) * rng.range(25, 60));
+        f.pose = rng.pick(['reaching', 'running', 'jumping'] as const);
+      }
+      break;
+    }
     case 'mirror':
       for (const f of c.figures)
         if (!f.locked) {
