@@ -1,4 +1,4 @@
-import { Alert, Group, Progress, RingProgress, Select, Stack, Switch, Text, Tooltip } from '@mantine/core';
+import { Alert, Group, Progress, RingProgress, Stack, Switch, Text, Tooltip } from '@mantine/core';
 import { IconAlertTriangle, IconCircleCheck, IconInfoCircle } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +10,7 @@ import { PRESET_KEYS, type PresetKey } from '@/core/evaluation/presets';
 import { useEvaluation } from '@/state/useEvaluation';
 import { useViewStore } from '@/state/viewStore';
 import { RadarChart } from './RadarChart';
+import { AdaptiveSelect } from '@/components/common/AdaptiveSelect';
 
 const scoreColor = (v: number) => (v >= 75 ? 'teal' : v >= 50 ? 'indigo' : v >= 25 ? 'yellow' : 'gray');
 
@@ -42,7 +43,7 @@ export function EvaluationPanel() {
 
   return (
     <Stack gap="sm">
-      <Select
+      <AdaptiveSelect
         label={t('evaluation.preset')}
         value={preset}
         allowDeselect={false}
@@ -70,7 +71,7 @@ export function EvaluationPanel() {
         compare={compare ? METRIC_KEYS.map((k) => compare[k]) : undefined}
         labels={METRIC_KEYS.map((k) => t(`metrics.${k}.short`))}
       />
-      <Select
+      <AdaptiveSelect
         size="xs"
         label={t('evaluation.compare')}
         placeholder={t('evaluation.comparePlaceholder')}

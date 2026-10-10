@@ -7,7 +7,6 @@ import {
   Group,
   NumberInput,
   SegmentedControl,
-  Select,
   Stack,
   Switch,
   Table,
@@ -23,6 +22,7 @@ import { useBackendStore } from '@/compute/colab';
 import { REPO_URL } from '@/lib/links';
 import { useSettingsStore, type ColorScheme, type Language } from '@/state/settingsStore';
 import type { PaletteName } from '@/core/scene/palette';
+import { AdaptiveSelect } from '@/components/common/AdaptiveSelect';
 
 export function SettingsPage() {
   const { t } = useTranslation();
@@ -62,7 +62,7 @@ export function SettingsPage() {
             {t('settings.general')}
           </Title>
           <Stack>
-            <Select
+            <AdaptiveSelect
               label={t('settings.language')}
               value={s.language}
               allowDeselect={false}

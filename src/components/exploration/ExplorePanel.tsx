@@ -4,7 +4,6 @@ import {
   Group,
   Progress,
   SegmentedControl,
-  Select,
   SimpleGrid,
   Slider,
   Stack,
@@ -18,24 +17,30 @@ import type { ExplorationMode } from '@/core/exploration/spec';
 import { randomSeed } from '@/core/random/prng';
 import { useCompositionStore } from '@/state/compositionStore';
 import { useExplorationStore } from '@/state/explorationStore';
-import { useSettingsStore } from '@/state/settingsStore';
 import { useViewStore } from '@/state/viewStore';
 import { CandidateCard } from './CandidateCard';
+import { useRunExploration } from '@/state/useRunExploration';
+import { AdaptiveSelect } from '@/components/common/AdaptiveSelect';
 
 const CANDIDATE_COUNTS = [200, 500, 1000, 2000, 5000, 10000, 20000];
 
-export function ExplorePanel() {
+interface Props {
+  /** Hide the candidate grid (mobile shows results in a strip over the canvas). */
+  compact?: boolean;
+  /** Called after the run button starts an exploration. */
+  onStarted?: () => void;
+}
+
+export function ExplorePanel({ compact = false, onStarted }: Props) {
   const { t } = useTranslation();
-  const { spec, setSpec, run, cancel, running, progress, result, error, activeIndex, setActive } =
-    useExplorationStore();
-  const composition = useCompositionStore((s) => s.composition);
+  const { spec, setSpec, cancel, running, progress, result, error, activeIndex, setActive } = useExplorationStore();
   const setComposition = useCompositionStore((s) => s.setComposition);
-  const workerCount = useSettingsStore((s) => s.workerCount);
   const { preset, setPreset, select } = useViewStore();
 
+  const runExploration = useRunExploration();
   const start = () => {
-    setSpec((s) => void (s.preset = preset));
-    void run(composition, workerCount);
+    void runExploration();
+    onStarted?.();
   };
 
   return (
@@ -86,7 +91,7 @@ export function ExplorePanel() {
           onChange={(v) => setSpec((s) => void (s.diversity = v))}
         />
       </Stack>
-      <Select
+      <AdaptiveSelect
         label={t('evaluation.preset')}
         value={preset}
         allowDeselect={false}
@@ -94,14 +99,14 @@ export function ExplorePanel() {
         onChange={(v) => v && setPreset(v as PresetKey)}
       />
       <Group gap="xs" grow align="flex-end">
-        <Select
+        <AdaptiveSelect
           label={t('explore.candidates')}
           value={String(spec.candidates)}
           allowDeselect={false}
           data={CANDIDATE_COUNTS.map((n) => ({ value: String(n), label: n.toLocaleString() }))}
           onChange={(v) => v && setSpec((s) => void (s.candidates = Number(v)))}
         />
-        <Select
+        <AdaptiveSelect
           label={t('explore.present')}
           value={String(spec.present)}
           allowDeselect={false}
@@ -150,7 +155,7 @@ export function ExplorePanel() {
           {error}
         </Text>
       )}
-      {result && (
+      {result && !compact && (
         <>
           <Text size="xs" c="dimmed">
             {result.backend === 'history'

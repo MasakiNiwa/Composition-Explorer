@@ -1,4 +1,4 @@
-import { Button, Group, SegmentedControl, Select, Stack, Switch, Text } from '@mantine/core';
+import { Button, Group, SegmentedControl, Stack, Switch, Text } from '@mantine/core';
 import { IconCopy, IconRuler2, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { eyeLevelFigureHeight } from '@/core/geometry/camera';
@@ -6,6 +6,7 @@ import { LAYERS, POSES, type Layer, type Pose } from '@/core/model/composition';
 import { useCompositionStore } from '@/state/compositionStore';
 import { useViewStore } from '@/state/viewStore';
 import { ParamSlider } from '../ParamSlider';
+import { AdaptiveSelect } from '@/components/common/AdaptiveSelect';
 
 export function InspectorPanel() {
   const { t } = useTranslation();
@@ -139,7 +140,7 @@ export function InspectorPanel() {
         checked={p.locked}
         onChange={(e) => updateProp(p.id, { locked: e.currentTarget.checked })}
       />
-      <Select
+      <AdaptiveSelect
         label={t('inspector.layer')}
         value={p.layer}
         allowDeselect={false}

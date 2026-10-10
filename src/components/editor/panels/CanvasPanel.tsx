@@ -1,9 +1,10 @@
-import { ActionIcon, Group, NumberInput, Select, Stack, TextInput, Tooltip } from '@mantine/core';
+import { ActionIcon, Group, NumberInput, Stack, TextInput, Tooltip } from '@mantine/core';
 import { IconArrowsExchange, IconDice5 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { ASPECT_PRESETS } from '@/core/model/composition';
 import { randomSeed } from '@/core/random/prng';
 import { useCompositionStore } from '@/state/compositionStore';
+import { AdaptiveSelect } from '@/components/common/AdaptiveSelect';
 
 export function CanvasPanel() {
   const { t } = useTranslation();
@@ -24,7 +25,7 @@ export function CanvasPanel() {
         }}
       />
       <Group align="flex-end" gap="xs" wrap="nowrap">
-        <Select
+        <AdaptiveSelect
           label={t('canvas.aspect')}
           data={[...ASPECT_PRESETS.map((p) => p.label), ...(isPreset ? [] : [current])]}
           value={current}
